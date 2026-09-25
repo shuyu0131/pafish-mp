@@ -6,7 +6,7 @@
 
 ## 界面
 
-直接使用 TDesign 默认视觉：品牌蓝主色、系统原生导航栏（`pages.json` 按页配置标题）、`t-tab-bar` 底部导航、`t-search` / `t-empty` / `t-skeleton` / `t-icon` 等原生组件。自定义部分只有业务组件（`zz-*`）与少量布局样式，不做主题换色与额外装饰。硬约束：不使用渐变、不使用 emoji 图标（TDesign 线性图标 + 单字母头像）、圆角克制（按钮 12rpx / 卡片 ≤14rpx 档）。
+直接使用 TDesign 默认视觉：品牌蓝主色、系统原生导航栏（`pages.json` 按页配置标题）、`t-tab-bar` 底部导航、`t-search` / `t-empty` / `t-skeleton` / `t-icon` 等原生组件。
 
 ## 功能
 
