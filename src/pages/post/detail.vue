@@ -285,6 +285,7 @@ onShareAppMessage(() => {
 .art {
   background: var(--zz-card);
   padding: 28rpx 32rpx;
+  border-bottom: 1rpx solid var(--zz-line);
 }
 .art-kicker { display: flex; align-items: center; gap: 10rpx; font-size: 22rpx; color: var(--zz-ink-3); }
 .art-cat { color: var(--zz-brand); font-weight: 600; }
@@ -350,7 +351,7 @@ onShareAppMessage(() => {
 }
 .pbtn.dis { background: var(--zz-ink-3); }
 
-.cmt-list { margin-top: 8rpx; background: var(--zz-card); border-radius: 18rpx; padding: 0 24rpx; }
+.cmt-list { margin-top: 8rpx; background: var(--zz-card); border-radius: 14rpx; padding: 0 24rpx; }
 .cmt-block { border-bottom: 1rpx solid var(--zz-line); }
 .cmt-block:last-child { border-bottom: none; }
 .cmt-reply { margin-left: 80rpx; }

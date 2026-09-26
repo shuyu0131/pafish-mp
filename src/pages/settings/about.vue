@@ -1,7 +1,7 @@
 <template>
   <view class="about">
     <!-- 站点身份卡：logo 用内置品牌标（本地打包深底白 P，与官网 SVG 同风格，不依赖远端 favicon） -->
-    <zz-card pad="36rpx 32rpx" class="hero">
+    <zz-card pad="36rpx 32rpx" r="0" class="hero">
       <view class="idrow">
         <image class="mark" src="/static/img/logo.png" mode="aspectFill" />
         <view class="idc">
@@ -13,7 +13,7 @@
     </zz-card>
 
     <view class="grp"><text class="grp-t">内容</text></view>
-    <zz-card pad="0" class="rows">
+    <zz-card pad="0" r="0" class="rows">
       <view class="mi" hover-class="zz-press" :hover-stay-time="60" @tap="go('/pages/index/index')">
         <t-icon name="book" size="40rpx" color="rgba(0,0,0,0.6)" />
         <text class="lb">全部文章</text>
@@ -32,7 +32,7 @@
     </zz-card>
 
     <view class="grp"><text class="grp-t">订阅</text></view>
-    <zz-card pad="0" class="rows">
+    <zz-card pad="0" r="0" class="rows">
       <view class="mi" hover-class="zz-press" :hover-stay-time="60" @tap="copy(rssUrl, 'RSS 地址已复制，粘贴到阅读器即可订阅')">
         <t-icon name="rss" size="40rpx" color="rgba(0,0,0,0.6)" />
         <text class="lb">RSS 订阅</text>
@@ -47,7 +47,7 @@
     </zz-card>
 
     <view class="grp"><text class="grp-t">版本</text></view>
-    <zz-card pad="0" class="rows">
+    <zz-card pad="0" r="0" class="rows">
       <view class="mi">
         <t-icon name="mobile" size="40rpx" color="rgba(0,0,0,0.6)" />
         <text class="lb">小程序版本</text>
@@ -61,7 +61,7 @@
     </zz-card>
 
     <view class="grp"><text class="grp-t">相关链接</text></view>
-    <zz-card pad="0" class="rows">
+    <zz-card pad="0" r="0" class="rows">
       <view class="mi" hover-class="zz-press" :hover-stay-time="60" @tap="copy(REPO_URL, '开源地址已复制')">
         <t-icon name="code" size="40rpx" color="rgba(0,0,0,0.6)" />
         <text class="lb">开源仓库</text>
@@ -115,7 +115,7 @@ function go(u) { uni.reLaunch({ url: u }) }
 </script>
 
 <style scoped>
-.hero { margin: 32rpx 32rpx 0; }
+.hero { margin: 0; }
 .idrow { display: flex; align-items: center; gap: 24rpx; }
 .mark {
   width: 96rpx; height: 96rpx; border-radius: 12rpx;
@@ -132,10 +132,10 @@ function go(u) { uni.reLaunch({ url: u }) }
 .grp { padding: 32rpx 32rpx 0; }
 .grp-t { display: block; font-size: 28rpx; font-weight: 600; color: var(--zz-ink); margin: 0 4rpx 16rpx; }
 
-.rows { margin: 0 32rpx; }
+.rows { margin: 0; }
 .mi {
   display: flex; align-items: center; gap: 22rpx;
-  padding: 28rpx; border-bottom: 1rpx solid var(--zz-line);
+  padding: 28rpx 32rpx; border-bottom: 1rpx solid var(--zz-line);
 }
 .mi.last { border-bottom: none; }
 .lb { flex: 1; min-width: 0; font-size: 28rpx; color: var(--zz-ink); }

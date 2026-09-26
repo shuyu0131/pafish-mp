@@ -15,7 +15,7 @@
         <t-skeleton :row-col="skRows" animation="gradient" />
       </view>
       <view v-else-if="list.length" class="flist">
-        <zz-card v-for="p in list" :key="p.id" pad="22rpx" press class="fv" @tap="openPost(p)">
+        <zz-card v-for="p in list" :key="p.id" pad="22rpx 32rpx" press r="0" class="fv" @tap="openPost(p)">
           <view class="cv" :style="coverBg(p)">
             <image v-if="p.coverUrl" class="cv-img" :src="p.coverUrl" mode="aspectFill" />
             <t-icon v-else :name="coverStyle(p).icon" size="52rpx" :color="coverStyle(p).fg" />
@@ -118,8 +118,9 @@ onReachBottom(() => {
 </script>
 
 <style scoped>
-.flist { padding: 24rpx 32rpx 0; }
-.fv { display: flex; align-items: center; gap: 22rpx; margin-bottom: 20rpx; }
+.flist { padding: 0; }
+.fv { display: flex; align-items: center; gap: 22rpx; border-bottom: 1rpx solid var(--zz-line); }
+.fv:last-child { border-bottom: none; }
 .cv {
   width: 148rpx; height: 148rpx; border-radius: 12rpx; overflow: hidden; flex: none;
   display: flex; align-items: center; justify-content: center; background: var(--zz-block);

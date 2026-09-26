@@ -171,6 +171,7 @@ onReachBottom(() => {
 .hc {
   display: flex; align-items: center; gap: 10rpx;
   background: var(--zz-card);
+  border: 2rpx solid var(--zz-line);
   border-radius: 8rpx; padding: 14rpx 26rpx;
   font-size: 24rpx; color: var(--zz-ink); line-height: 1.4;
 }
@@ -178,7 +179,8 @@ onReachBottom(() => {
 
 .hs {
   background: var(--zz-card);
-  border-radius: 18rpx; overflow: hidden; margin-top: 20rpx;
+  border: 2rpx solid var(--zz-line);
+  border-radius: 14rpx; overflow: hidden; margin-top: 20rpx;
 }
 .hr {
   display: flex; align-items: center; gap: 20rpx;
@@ -188,8 +190,8 @@ onReachBottom(() => {
 .ht { flex: 1; min-width: 0; font-size: 28rpx; color: var(--zz-ink); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .x { padding: 4rpx 8rpx; line-height: 0; }
 
-.feed { padding: 20rpx 32rpx 0; }
-.feed-item { margin-bottom: 24rpx; }
+.feed { padding: 0; }
+.feed-item { padding: 24rpx 32rpx; border-bottom: 1rpx solid var(--zz-line); }
 .more { text-align: center; padding: 18rpx 0 8rpx; }
 .more text { font-size: 24rpx; color: var(--zz-ink-3); }
 

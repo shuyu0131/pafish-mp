@@ -172,8 +172,9 @@ onPullDownRefresh(async () => {
 .hd {
   position: sticky; top: 0; z-index: 30;
   background: var(--zz-paper);
+  border-bottom: 1rpx solid var(--zz-line);
 }
-.srow { padding: 8rpx 0 4rpx; }
+.srow { padding: 8rpx 32rpx 4rpx; }
 .search-fake {
   display: flex; align-items: center; gap: 12rpx;
   height: 80rpx; padding: 0 24rpx;
@@ -189,21 +190,23 @@ onPullDownRefresh(async () => {
   display: inline-flex; align-items: center;
   margin-right: 14rpx; padding: 10rpx 26rpx;
   background: var(--zz-card);
+  border: 2rpx solid var(--zz-line);
   border-radius: 8rpx;
   font-size: 24rpx; color: var(--zz-ink-2); line-height: 1.5;
 }
 .chip.on {
   background: var(--zz-brand-soft);
+  border-color: var(--zz-brand-soft);
   color: var(--zz-brand); font-weight: 600;
 }
 
 .banner {
   margin: 0 32rpx 8rpx;
-  border-radius: 18rpx; overflow: hidden;
+  border-radius: 14rpx; overflow: hidden;
 }
 
-.feed { padding: 8rpx 32rpx 0; }
-.feed-item { margin-bottom: 24rpx; }
+.feed { padding: 0; }
+.feed-item { padding: 24rpx 32rpx; border-bottom: 1rpx solid var(--zz-line); }
 .more { text-align: center; padding: 18rpx 0 8rpx; }
 .more text { font-size: 24rpx; color: var(--zz-ink-3); }
 

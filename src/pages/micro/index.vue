@@ -106,10 +106,10 @@ onShareAppMessage((res) => {
 </script>
 
 <style scoped>
-.srow { padding: 8rpx 0 4rpx; }
+.srow { padding: 8rpx 32rpx 4rpx; }
 
-.mflow { padding: 8rpx 32rpx 0; }
-.flow-item { margin-bottom: 24rpx; }
+.mflow { padding: 0; }
+.flow-item { padding: 24rpx 32rpx; border-bottom: 1rpx solid var(--zz-line); }
 .pad { padding: 48rpx 32rpx 0; }
 .retry {
   display: flex; align-items: center; justify-content: center; gap: 10rpx;

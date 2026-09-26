@@ -2,7 +2,7 @@
   <view class="set">
     <view v-if="loginOn" class="sec">
       <text class="grp">账号</text>
-      <zz-card pad="0">
+      <zz-card pad="0" r="0">
         <view class="mi last" hover-class="zz-press" :hover-stay-time="60" @tap="accountTap">
           <text class="lb">微信账号</text>
           <text class="tip">{{ accountTip }}</text>
@@ -13,7 +13,7 @@
 
     <view class="sec">
       <text class="grp">通用</text>
-      <zz-card pad="0">
+      <zz-card pad="0" r="0">
         <view class="mi last" hover-class="zz-press" :hover-stay-time="60" @tap="doClearCache">
           <text class="lb">清除缓存</text>
           <text class="tip">{{ cacheTip }}</text>
@@ -24,7 +24,7 @@
 
     <view class="sec">
       <text class="grp">关于</text>
-      <zz-card pad="0">
+      <zz-card pad="0" r="0">
         <view class="mi" hover-class="zz-press" :hover-stay-time="60" @tap="go('/pages/settings/about')">
           <text class="lb">关于纸鱼博客</text>
           <t-icon name="chevron-right" size="32rpx" color="rgba(0,0,0,0.4)" />
@@ -116,14 +116,14 @@ onShow(() => { cacheChars.value = cacheSize() })
 </script>
 
 <style scoped>
-.sec { padding: 24rpx 32rpx 0; }
+.sec { padding: 24rpx 0 0; }
 .grp {
   display: block; font-size: 28rpx; font-weight: 600; color: var(--zz-ink);
-  margin: 0 4rpx 16rpx;
+  margin: 0 36rpx 16rpx;
 }
 .mi {
   display: flex; align-items: center; gap: 16rpx;
-  padding: 28rpx; border-bottom: 1rpx solid var(--zz-line);
+  padding: 28rpx 32rpx; border-bottom: 1rpx solid var(--zz-line);
 }
 .mi.last { border-bottom: none; }
 .lb { flex: 1; min-width: 0; font-size: 28rpx; font-weight: 400; color: var(--zz-ink); }
@@ -131,7 +131,8 @@ onShow(() => { cacheChars.value = cacheSize() })
 
 .logout {
   margin: 40rpx 32rpx 0; background: var(--zz-card);
-  border-radius: 18rpx;
+  border: 2rpx solid var(--zz-line);
+  border-radius: 14rpx;
   padding: 28rpx 0; text-align: center; font-size: 28rpx; font-weight: 600;
   color: #d54941;
 }

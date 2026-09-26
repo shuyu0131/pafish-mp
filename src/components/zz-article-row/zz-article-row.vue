@@ -1,5 +1,6 @@
 <template>
-  <zz-card press @tap="$emit('tap')">
+  <!-- 通栏列表行：底色/内边距/分隔线由页面容器负责（白底 + 灰色分割线方案） -->
+  <view hover-class="zz-ar--press" :hover-stay-time="60" @tap="$emit('tap')">
     <view class="zz-row">
       <view class="zz-row-main">
         <view class="zz-row-title-line">
@@ -23,7 +24,7 @@
         <t-icon v-else :name="cover.icon" size="44rpx" :color="cover.fg" />
       </view>
     </view>
-  </zz-card>
+  </view>
 </template>
 
 <script>
@@ -86,4 +87,6 @@ export default {
   overflow: hidden;
 }
 .zz-row-cover-img { width: 100%; height: 100%; }
+/* 小程序组件样式隔离：按压态类需组件内自带 */
+.zz-ar--press { background-color: rgba(0, 0, 0, 0.05); }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <view class="mine">
     <!-- 身份卡 -->
-    <zz-card pad="32rpx" class="idcard">
+    <zz-card pad="32rpx" r="0" class="idcard">
       <block v-if="logged">
         <view class="idrow">
           <!-- 微信头像昵称填写能力：chooseAvatar + type=nickname，绝不用 getUserProfile -->
@@ -46,8 +46,11 @@
       </block>
     </zz-card>
 
+    <!-- 分组间灰色分割条 -->
+    <view v-if="logged && loginOn" class="zz-gap" />
+
     <!-- 统计卡（登录且功能开启时）。点赞数没有对应页面，只作展示不可点 -->
-    <zz-card v-if="logged && loginOn" pad="30rpx 0" class="statcard">
+    <zz-card v-if="logged && loginOn" pad="30rpx 0" r="0" class="statcard">
       <view class="st" v-if="showCmt" hover-class="zz-press-op" :hover-stay-time="60" @tap="go('/pages/mine/comments')">
         <text class="sv">{{ fmtNum(stats.comments) }}</text><text class="sl">评论</text>
       </view>
@@ -59,8 +62,10 @@
       </view>
     </zz-card>
 
+    <view class="zz-gap" />
+
     <!-- 菜单 -->
-    <zz-card pad="0" class="mlist">
+    <zz-card pad="0" r="0" class="mlist">
       <view v-if="showCmt" class="mi" hover-class="zz-press" :hover-stay-time="60" @tap="go('/pages/mine/comments')">
         <t-icon name="chat" size="40rpx" color="rgba(0,0,0,0.6)" />
         <text class="lb">我的评论</text><t-icon name="chevron-right" size="32rpx" color="rgba(0,0,0,0.4)" />
@@ -168,7 +173,7 @@ onShow(() => {
 </script>
 
 <style scoped>
-.mine > .zz-card { margin: 24rpx 32rpx 0; }
+.mine > .zz-card { margin: 0; }
 
 .idrow { display: flex; align-items: center; gap: 26rpx; }
 .avabtn {
@@ -212,7 +217,7 @@ onShow(() => {
 
 .mlist { overflow: hidden; }
 .mi {
-  display: flex; align-items: center; gap: 22rpx; padding: 30rpx 28rpx;
+  display: flex; align-items: center; gap: 22rpx; padding: 30rpx 32rpx;
   border-bottom: 1rpx solid var(--zz-line);
 }
 .mi.last { border-bottom: none; }

@@ -1,5 +1,6 @@
 <template>
-  <zz-card pad="28rpx" @tap="openCard">
+  <!-- 通栏微语行：底色/内边距/分隔线由页面容器负责（白底 + 灰色分割线方案） -->
+  <view hover-class="zz-mi--press" :hover-stay-time="60" @tap="openCard">
     <view class="zz-micro">
       <view class="zz-micro-head">
         <zz-avatar :url="avatarUrl" :name="authorName" :size="64" />
@@ -43,7 +44,7 @@
         <!-- #endif -->
       </view>
     </view>
-  </zz-card>
+  </view>
 </template>
 
 <script>
@@ -143,4 +144,5 @@ export default {
 .zz-micro-share::after { border: none; }
 /* 小程序组件样式隔离：按压态类需组件内自带 */
 .zz-press-op { opacity: 0.55; }
+.zz-mi--press { background-color: rgba(0, 0, 0, 0.05); }
 </style>

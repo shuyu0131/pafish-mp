@@ -51,6 +51,9 @@ view, text, button, input, textarea, image {
 .zz-press { background-color: rgba(0, 0, 0, 0.05) !important; }
 .zz-press-op { opacity: 0.55; }
 
+/* 白底页面的分组分隔：16rpx 灰条（原页面底的 gray-1 收成分割线） */
+.zz-gap { height: 16rpx; background: #f3f3f3; }
+
 /* 空状态插图统一尺寸（t-empty 为 shared 隔离，全局样式可穿透；
    t-image 无默认宽高，不约束会落到原生 image 的 320×240 兜底） */
 .t-empty__thumb .t-image {

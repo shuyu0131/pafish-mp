@@ -7,7 +7,7 @@
     <block v-if="hasAny">
       <view v-for="g in groups" :key="g.name" class="sec">
         <text class="grp">{{ g.name }}</text>
-        <zz-card pad="0" class="hs">
+        <zz-card pad="0" r="0" class="hs">
           <view v-for="(it, i) in g.items" :key="it.slug" class="hr" :class="{ last: i === g.items.length - 1 }" hover-class="zz-press" :hover-stay-time="60" @tap="openPost(it)">
             <view class="cv">
               <t-icon :name="coverStyle({ slug: it.slug }).icon" size="34rpx" :color="coverStyle({ slug: it.slug }).fg" />
@@ -77,14 +77,14 @@ onShow(reload)
 .clr-row { display: flex; justify-content: flex-end; padding: 24rpx 32rpx 0; }
 .clr { font-size: 24rpx; color: var(--zz-ink-3); padding: 4rpx 0 4rpx 20rpx; }
 
-.sec { padding: 16rpx 32rpx 0; }
+.sec { padding: 16rpx 0 0; }
 .grp {
   display: block; font-size: 24rpx; font-weight: 600; color: var(--zz-ink-2);
-  margin: 0 4rpx 16rpx;
+  margin: 0 36rpx 16rpx;
 }
 .hr {
   display: flex; align-items: center; gap: 20rpx;
-  padding: 24rpx 28rpx; border-bottom: 1rpx solid var(--zz-line);
+  padding: 24rpx 32rpx; border-bottom: 1rpx solid var(--zz-line);
 }
 .hr.last { border-bottom: none; }
 .cv {

@@ -12,7 +12,7 @@
     </view>
     <template v-else>
       <view v-if="list.length" class="cl">
-        <zz-card v-for="c in list" :key="c.id" pad="26rpx 28rpx" press class="myc">
+        <zz-card v-for="c in list" :key="c.id" pad="26rpx 32rpx" press r="0" class="myc">
           <text class="p">{{ c.content }}</text>
           <view v-if="c.postSlug" class="src" hover-class="zz-press" :hover-stay-time="60" @tap="openPost(c)">
             <t-icon name="file-1" size="28rpx" color="rgba(0,0,0,0.4)" />
@@ -90,8 +90,9 @@ onReachBottom(() => {
 </script>
 
 <style scoped>
-.cl { padding: 24rpx 32rpx 0; }
-.myc { margin-bottom: 20rpx; }
+.cl { padding: 0; }
+.myc { border-bottom: 1rpx solid var(--zz-line); }
+.myc:last-child { border-bottom: none; }
 .p { display: block; font-size: 28rpx; line-height: 1.75; color: var(--zz-ink); word-break: break-all; }
 .src {
   display: flex; align-items: center; gap: 14rpx; margin-top: 18rpx;
