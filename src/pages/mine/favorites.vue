@@ -15,7 +15,7 @@
         <t-skeleton :row-col="skRows" animation="gradient" />
       </view>
       <view v-else-if="list.length" class="flist">
-        <zz-card v-for="p in list" :key="p.id" pad="22rpx 32rpx" press r="0" class="fv" @tap="openPost(p)">
+        <zz-card v-for="p in list" :key="p.id" pad="22rpx 32rpx" press r="0" class="fv" @select="openPost(p)">
           <view class="cv" :style="coverBg(p)">
             <image v-if="p.coverUrl" class="cv-img" :src="p.coverUrl" mode="aspectFill" />
             <t-icon v-else :name="coverStyle(p).icon" size="52rpx" :color="coverStyle(p).fg" />

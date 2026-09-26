@@ -16,7 +16,6 @@ export const K = {
   CONFIG: 'zz_config',       // /mp/config 快照 {features, site, csrf?...}
   HISTORY: 'zz_history',     // 浏览历史（本地）
   SEARCH: 'zz_search_hist',  // 搜索历史（本地）
-  MICRO: 'zz_micro_current', // 微语详情整条传递（插件暂无按 id 端点）
 }
 
 export const HISTORY_LIMIT = 100

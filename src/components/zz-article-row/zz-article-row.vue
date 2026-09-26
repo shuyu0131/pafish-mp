@@ -1,6 +1,8 @@
 <template>
-  <!-- 通栏列表行：底色/内边距/分隔线由页面容器负责（白底 + 灰色分割线方案） -->
-  <view hover-class="zz-ar--press" :hover-stay-time="60" @tap="$emit('tap')">
+  <!-- 通栏列表行：底色/内边距/分隔线由页面容器负责（白底 + 灰色分割线方案）。
+       事件名用 select 而不是 tap：tap 与原生事件同名，页面 @tap 会被编译成 bindtap，
+       原生冒泡和组件 $emit 各触发一次，导致跳两次详情页。 -->
+  <view hover-class="zz-ar--press" :hover-stay-time="60" @tap="$emit('select')">
     <view class="zz-row">
       <view class="zz-row-main">
         <view class="zz-row-title-line">
@@ -37,7 +39,7 @@ export default {
   props: {
     post: { type: Object, required: true },
   },
-  emits: ['tap'],
+  emits: ['select'],
   computed: {
     isTop() { return !!(this.post.isPinned || this.post.categoryPinned) },
     coverImg() { return usableCover(this.post.coverUrl) },

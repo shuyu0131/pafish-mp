@@ -1,5 +1,7 @@
 <template>
-  <view class="zz-card" :hover-class="press ? 'zz-card--press' : 'none'" :hover-stay-time="60" :style="radiusStyle" @tap="$emit('tap')">
+  <!-- 事件名用 select 而不是 tap：tap 与原生事件同名，页面 @tap 会编译成 bindtap，
+       原生冒泡与组件 $emit 各触发一次，点击会执行两次。 -->
+  <view class="zz-card" :hover-class="press ? 'zz-card--press' : 'none'" :hover-stay-time="60" :style="radiusStyle" @tap="$emit('select')">
     <slot />
   </view>
 </template>
@@ -14,7 +16,7 @@ export default {
     r: { type: [Number, String], default: 18 }, // 圆角 rpx（对齐 TDesign 卡片 9px）
     press: { type: Boolean, default: false },   // 按压反馈
   },
-  emits: ['tap'],
+  emits: ['select'],
   computed: {
     radiusStyle() {
       return `padding:${this.pad};border-radius:${this.r}rpx;`

@@ -93,13 +93,13 @@ onPullDownRefresh(async () => {
 })
 
 onShareAppMessage((res) => {
-  // 卡片上的分享按钮：带 data-id 时直达该条微语详情；审核模式退回中性首页
+  // 卡片上的分享按钮：微语没有详情页，分享统一指向时间流，标题带该条正文摘要
   if (auditMode()) return { title: state.site.name || '纸鱼博客', path: '/pages/index/index' }
   const id = res && res.from === 'button' && res.target && res.target.dataset.id
   if (id) {
     const hit = list.value.find((m) => String(m.id) === String(id))
     const text = hit ? String(hit.content || '').replace(/[#>*`\s]+/g, ' ').slice(0, 24) : ''
-    return { title: text || state.site.name || '纸鱼博客', path: '/pages/micro/detail?id=' + encodeURIComponent(id), imageUrl: '/static/img/share-fallback.png' }
+    return { title: text || state.site.name || '纸鱼博客', path: '/pages/micro/index', imageUrl: '/static/img/share-fallback.png' }
   }
   return { title: state.site.name || '纸鱼博客', path: '/pages/micro/index', imageUrl: '/static/img/share-fallback.png' }
 })

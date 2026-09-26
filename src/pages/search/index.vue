@@ -52,7 +52,7 @@
       </view>
       <view v-else-if="list.length" class="feed">
         <view v-for="p in list" :key="p.id" class="feed-item">
-          <zz-article-row :post="p" @tap="openPost(p)" />
+          <zz-article-row :post="p" @select="openPost(p)" />
         </view>
         <view class="more">
           <text v-if="loading">正在加载更多…</text>

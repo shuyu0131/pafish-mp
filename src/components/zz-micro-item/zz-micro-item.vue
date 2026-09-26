@@ -1,58 +1,53 @@
 <template>
-  <!-- 通栏微语行：底色/内边距/分隔线由页面容器负责（白底 + 灰色分割线方案） -->
-  <view hover-class="zz-mi--press" :hover-stay-time="60" @tap="openCard">
-    <view class="zz-micro">
-      <view class="zz-micro-head">
-        <zz-avatar :url="avatarUrl" :name="authorName" :size="64" />
-        <view class="zz-micro-head-txt">
-          <text class="zz-micro-author">{{ authorName }}</text>
-          <text class="zz-micro-time">{{ fmtClock(item.publishedAt) }}<text v-if="edited"> · 修改于 {{ fmtClock(item.updatedAt) }}</text></text>
-        </view>
-        <text v-if="item.isPinned" class="zz-micro-pin">置顶</text>
+  <!-- 通栏微语行：底色/内边距/分隔线由页面容器负责（白底 + 灰色分割线方案）。
+       列表接口已下发完整正文与配图，没有详情页，整卡不可点。 -->
+  <view class="zz-micro">
+    <view class="zz-micro-head">
+      <zz-avatar :url="avatarUrl" :name="authorName" :size="64" />
+      <view class="zz-micro-head-txt">
+        <text class="zz-micro-author">{{ authorName }}</text>
+        <text class="zz-micro-time">{{ fmtClock(item.publishedAt) }}<text v-if="edited"> · 修改于 {{ fmtClock(item.updatedAt) }}</text></text>
       </view>
+      <text v-if="item.isPinned" class="zz-micro-pin">置顶</text>
+    </view>
 
-      <view class="zz-micro-say">
-        <rich-text v-if="item.contentHtml" :nodes="sayNodes" />
-        <text v-else>{{ item.content }}</text>
-      </view>
+    <view class="zz-micro-say">
+      <rich-text v-if="item.contentHtml" :nodes="sayNodes" />
+      <text v-else>{{ item.content }}</text>
+    </view>
 
-      <view v-if="media.length" class="zz-micro-media" :class="{ one: media.length === 1 }">
-        <image
-          v-for="(u, i) in media" :key="i"
-          class="zz-micro-pic"
-          :src="u"
-          :mode="media.length === 1 ? 'widthFix' : 'aspectFill'"
-          @tap.stop="preview(i)"
-        />
-      </view>
+    <view v-if="media.length" class="zz-micro-media" :class="{ one: media.length === 1 }">
+      <image
+        v-for="(u, i) in media" :key="i"
+        class="zz-micro-pic"
+        :src="u"
+        :mode="media.length === 1 ? 'widthFix' : 'aspectFill'"
+        @tap.stop="preview(i)"
+      />
+    </view>
 
-      <view class="zz-micro-foot">
-        <view v-if="showLike" class="zz-micro-act" :class="{ on: item.liked }" hover-class="zz-press-op" :hover-stay-time="60" @tap.stop="onLike">
-          <t-icon :name="item.liked ? 'thumb-up-filled' : 'thumb-up'" size="30rpx"
-            :color="item.liked ? '#0052d9' : 'rgba(0,0,0,0.4)'" />
-          <text class="zz-micro-act-txt">{{ fmtNum(item.likeCount || 0) }}</text>
-        </view>
-        <view v-if="!flat" class="zz-micro-act" hover-class="zz-press-op" :hover-stay-time="60" @tap.stop="open">
-          <t-icon name="browse" size="30rpx" color="rgba(0,0,0,0.4)" />
-          <text class="zz-micro-act-txt">全文</text>
-        </view>
-        <!-- #ifdef MP-WEIXIN -->
-        <button v-if="!audit" class="zz-micro-act zz-micro-share" open-type="share" :data-id="item.id" hover-class="zz-press-op" :hover-stay-time="60" @tap.stop>
-          <t-icon name="share-1" size="30rpx" color="rgba(0,0,0,0.4)" />
-          <text class="zz-micro-act-txt">分享</text>
-        </button>
-        <!-- #endif -->
+    <view class="zz-micro-foot">
+      <view v-if="showLike" class="zz-micro-act" :class="{ on: item.liked }" hover-class="zz-press-op" :hover-stay-time="60" @tap.stop="onLike">
+        <t-icon :name="item.liked ? 'thumb-up-filled' : 'thumb-up'" size="30rpx"
+          :color="item.liked ? '#0052d9' : 'rgba(0,0,0,0.4)'" />
+        <text class="zz-micro-act-txt">{{ fmtNum(item.likeCount || 0) }}</text>
       </view>
+      <!-- #ifdef MP-WEIXIN -->
+      <button v-if="!audit" class="zz-micro-act zz-micro-share" open-type="share" :data-id="item.id" hover-class="zz-press-op" :hover-stay-time="60" @tap.stop>
+        <t-icon name="share-1" size="30rpx" color="rgba(0,0,0,0.4)" />
+        <text class="zz-micro-act-txt">分享</text>
+      </button>
+      <!-- #endif -->
     </view>
   </view>
 </template>
 
 <script>
-// 微语卡片：头像+昵称+时间 / Markdown 渲染后的正文 / 配图 / 点赞 / 跳详情。
-// 点赞在卡内完成，受 like 开关与审核模式门控；flat 为详情页内嵌模式（无跳详情入口）。
+// 微语卡片：头像+昵称+时间 / Markdown 渲染后的正文 / 配图 / 点赞。
+// 点赞在卡内完成，受 like 开关与审核模式门控。
+// 无详情页：列表接口下发的就是完整正文（含 contentHtml 与 media），点卡片不再跳转。
 import { fmtClock, fmtNum } from '@/common/format.js'
 import { styleHtml } from '@/common/mdcss.js'
-import { K } from '@/common/config.js'
 import { state, feat, auditMode } from '@/common/store.js'
 import { toggleMicroLike, ensureLogin, toast } from '@/common/request.js'
 
@@ -60,7 +55,6 @@ export default {
   name: 'ZzMicroItem',
   props: {
     item: { type: Object, required: true },
-    flat: { type: Boolean, default: false },
   },
   computed: {
     authorName() { return (this.item.author && (this.item.author.name || this.item.author.nickname)) || '站长' },
@@ -82,12 +76,6 @@ export default {
   },
   methods: {
     fmtClock, fmtNum,
-    openCard() { if (!this.flat) this.open() },
-    open() {
-      // 详情端点由插件后续提供，当前整条经 storage 传递
-      try { uni.setStorageSync(K.MICRO, JSON.parse(JSON.stringify(this.item))) } catch (e) { /* 满则跳过 */ }
-      uni.navigateTo({ url: '/pages/micro/detail?id=' + encodeURIComponent(this.item.id) })
-    },
     preview(i) {
       uni.previewImage({ urls: this.media, current: i })
     },
@@ -144,5 +132,4 @@ export default {
 .zz-micro-share::after { border: none; }
 /* 小程序组件样式隔离：按压态类需组件内自带 */
 .zz-press-op { opacity: 0.55; }
-.zz-mi--press { background-color: rgba(0, 0, 0, 0.05); }
 </style>
