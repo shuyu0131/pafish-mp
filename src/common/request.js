@@ -2,8 +2,18 @@
 // 约定：成功 resolve 后端 JSON；失败 reject(new Error(用户可读文案))。
 // 安全：X-API-Key 是服务端密钥，绝不出现在小程序端；写操作走插件的
 // X-MP-Token + session cookie + _csrf 三重校验。
+//
+// 两个稳定性要点（对应线上「网络有点打滑 / 请刷新页面重试」）：
+// 1) 服务端 csrf 与 session cookie 绑定。冷启动时 onLaunch、onShow 与首次写操作
+//    可能并发触发 /mp/config，服务端给每个不带 cookie 的请求各建一个会话，客户端
+//    只留最后一份 cookie、却可能留着另一份 csrf —— 写操作必然 419。
+//    因此 config() 单飞（并发共享同一个 promise），并在 419 时换新 csrf 重试一次。
+// 2) 线上偶发连接被重置。幂等 GET 做退避重试；登录在 code 未被消费时换新 code 重来一次。
 import { BASE_URL } from './config.js'
 import { state, applyConfig, setAuth, setUser, setStats, clearAuth, openLoginSheet } from './store.js'
+
+const NET_MSG = '网络有点打滑，稍后再试'
+const GET_RETRY_DELAYS = [300, 900] // 仅用于幂等 GET
 
 function header(auth = true) {
   const h = { 'content-type': 'application/json' }
@@ -11,7 +21,7 @@ function header(auth = true) {
   return h
 }
 
-function raw(method, path, data) {
+function once(method, path, data) {
   return new Promise((resolve, reject) => {
     uni.request({
       url: BASE_URL + path,
@@ -20,9 +30,28 @@ function raw(method, path, data) {
       header: header(),
       timeout: 15000,
       success: (res) => resolve(res),
-      fail: () => reject(new Error('网络有点打滑，稍后再试')),
+      fail: () => reject(new Error(NET_MSG)),
     })
   })
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+/** GET 幂等，抖动可安全重试；写操作只发一次，避免重复写入 */
+async function raw(method, path, data) {
+  const tries = method === 'GET' ? GET_RETRY_DELAYS.length + 1 : 1
+  let last = null
+  for (let i = 0; i < tries; i++) {
+    try {
+      return await once(method, path, data)
+    } catch (e) {
+      last = e
+      if (i < tries - 1) await sleep(GET_RETRY_DELAYS[i])
+    }
+  }
+  throw last
 }
 
 /** 统一判定：HTTP 2xx 且 body.ok，否则抛错；401/403 附带全局副作用 */
@@ -57,9 +86,25 @@ async function ensureCsrf() {
 }
 
 async function post(path, body, opts = {}) {
-  const data = Object.assign({}, body || {})
-  if (!opts.noCsrf) data._csrf = await ensureCsrf()
-  const res = await raw('POST', path, data)
+  const send = async () => {
+    const data = Object.assign({}, body || {})
+    if (!opts.noCsrf) data._csrf = await ensureCsrf()
+    return raw('POST', path, data)
+  }
+  let res = await send()
+  if (res && res.statusCode === 419) {
+    // csrf 与当前会话不匹配（多见于冷启动并发建会话）：换一份 csrf 再试一次。
+    // 先等掉在途的 config——它本身会带回可用的 csrf；若没有在途的才另发一次，
+    // 始终保证同一时刻只有一个会写 cookie 的请求。
+    state.csrf = ''
+    if (configInFlight) {
+      await configInFlight.catch(() => { /* 失败则走下面补发 */ })
+    }
+    if (!state.csrf) {
+      await config(true).catch(() => { /* 仍失败则交给下方 unwrap 报错 */ })
+    }
+    res = await send()
+  }
   return unwrap(res, path)
 }
 
@@ -75,12 +120,24 @@ function buildQuery(o) {
 
 // ---- 端点 -------------------------------------------------------------------
 
-/** GET /mp/config：功能开关 + csrf + 站点信息（登录前也允许） */
-export async function config() {
-  const res = await raw('GET', '/mp/config')
-  const body = res.data && res.data.ok !== false ? res.data : null
-  if (body) applyConfig(body)
-  return body
+let configInFlight = null
+
+/**
+ * GET /mp/config：功能开关 + csrf + 站点信息（登录前也允许）。
+ * 单飞：并发调用共享同一个请求，避免服务端为每个无 cookie 请求各建会话。
+ * @param {boolean} force 绕过单飞强制重新拉取（仅 419 自愈时使用）
+ */
+export function config(force = false) {
+  if (configInFlight && !force) return configInFlight
+  const p = raw('GET', '/mp/config').then((res) => {
+    const body = res.data && res.data.ok !== false ? res.data : null
+    if (body) applyConfig(body)
+    return body
+  })
+  configInFlight = p
+  const clear = () => { if (configInFlight === p) configInFlight = null }
+  p.then(clear, clear)
+  return p
 }
 
 /** 强制登录态下刷新开关（保留 csrf 语义） */
@@ -111,17 +168,25 @@ export function myFavorites(page) { return get('/mp/me/favorites', { page: page 
 export function login() {
   return new Promise((resolve, reject) => {
     // #ifdef MP-WEIXIN
-    uni.login({
-      provider: 'weixin',
-      success: async ({ code }) => {
-        try {
-          const body = await post('/mp/login', { code }, { noCsrf: false })
-          setAuth(body.token, body.expiresIn, body.user)
-          resolve(body)
-        } catch (e) { reject(e) }
-      },
-      fail: () => reject(new Error('微信登录失败，请重试')),
-    })
+    // code 是一次性的：请求若因连接被重置而没到达服务端，就换个新 code 重来一次；
+    // 若服务端已消费该 code，重试会得到「凭证无效」，此时交给用户手动重试。
+    const attempt = (left) => {
+      uni.login({
+        provider: 'weixin',
+        success: async ({ code }) => {
+          try {
+            const body = await post('/mp/login', { code })
+            setAuth(body.token, body.expiresIn, body.user)
+            resolve(body)
+          } catch (e) {
+            if (left > 0 && e && e.message === NET_MSG) attempt(left - 1)
+            else reject(e)
+          }
+        },
+        fail: () => reject(new Error('微信登录失败，请重试')),
+      })
+    }
+    attempt(1)
     // #endif
     // #ifndef MP-WEIXIN
     reject(new Error('请在微信开发者工具中预览真机登录'))
