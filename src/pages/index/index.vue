@@ -20,9 +20,18 @@
       </scroll-view>
     </view>
 
-    <!-- 轮播：插件配置横幅 > 带封面文章 > 内置默认横幅（仅全部分类下展示） -->
+    <!-- 横幅：插件配置 > 带封面文章 > 内置默认图（仅全部分类下展示）。
+         只有一张时直接画图，不再套 swiper——单页轮播只剩一个圆点，还会空转自动播放 -->
     <view v-if="cat === '' && banner.length" class="banner">
+      <image
+        v-if="banner.length === 1"
+        class="banner-one"
+        :src="bannerImgs[0]"
+        mode="aspectFill"
+        @tap="onBannerTap({ index: 0 })"
+      />
       <t-swiper
+        v-else
         :list="bannerImgs"
         height="340rpx"
         :autoplay="true"
@@ -77,11 +86,10 @@ const cat = ref('')      // 当前分类 slug，'' = 全部
 const banner = ref([])   // 轮播 [{img, slug}]（仅全部分类下展示）
 const page = ref(1)
 
-// 内置默认横幅：图库真实照片（本地打包非热链，无中文文案）；插件端配置 banners 后优先用配置
+// 内置默认横幅：图库真实照片（本地打包非热链，无中文文案）；插件端配置 banners 后优先用配置。
+// 只保留一张——微信「代码质量」按包内图片音频总量卡 200K，多张实拍图很容易触线。
 const DEFAULT_BANNERS = [
   { img: '/static/img/banner-1.jpg', slug: '' },
-  { img: '/static/img/banner-2.jpg', slug: '' },
-  { img: '/static/img/banner-3.jpg', slug: '' },
 ]
 const bannerImgs = computed(() => banner.value.map((b) => b.img))
 const totalPages = ref(1)
@@ -204,6 +212,7 @@ onPullDownRefresh(async () => {
   margin: 0 32rpx 8rpx;
   border-radius: 14rpx; overflow: hidden;
 }
+.banner-one { display: block; width: 100%; height: 340rpx; }
 
 .feed { padding: 0; }
 .feed-item { padding: 24rpx 32rpx; border-bottom: 1rpx solid var(--zz-line); }
