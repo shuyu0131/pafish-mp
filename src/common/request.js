@@ -1,14 +1,11 @@
-// 网络层：/mp/* 全部端点 + CSRF + token 注入 + 错误语义。
+// 网络层：/mp/* 全部端点 + token 注入 + 错误语义。
 // 约定：成功 resolve 后端 JSON；失败 reject(new Error(用户可读文案))。
 // 安全：X-API-Key 是服务端密钥，绝不出现在小程序端；写操作走插件的
-// X-MP-Token + session cookie + _csrf 三重校验。
+// X-MP-Token 自管凭据鉴权，服务端另有匿名写限流兜底。
+// 服务端写入路由声明 csrf:false：小程序 wx.request 没有 cookie jar，会话令牌
+// （pafish_session 绑定）在这里永远校验不过，不再依赖它。
 //
-// 两个稳定性要点（对应线上「网络有点打滑 / 请刷新页面重试」）：
-// 1) 服务端 csrf 与 session cookie 绑定。冷启动时 onLaunch、onShow 与首次写操作
-//    可能并发触发 /mp/config，服务端给每个不带 cookie 的请求各建一个会话，客户端
-//    只留最后一份 cookie、却可能留着另一份 csrf —— 写操作必然 419。
-//    因此 config() 单飞（并发共享同一个 promise），并在 419 时换新 csrf 重试一次。
-// 2) 线上偶发连接被重置。幂等 GET 做退避重试；登录在 code 未被消费时换新 code 重来一次。
+// 稳定性：线上偶发连接被重置。幂等 GET 做退避重试；登录在 code 未被消费时换新 code 重来一次。
 import { BASE_URL } from './config.js'
 import { state, applyConfig, setAuth, setUser, setStats, clearAuth, openLoginSheet } from './store.js'
 
@@ -79,7 +76,11 @@ async function get(path, params) {
   return unwrap(res, path)
 }
 
-/** 写操作前刷新 config：拿新 csrf（session 绑定）并同步最新开关 */
+/**
+ * 写操作前带上 csrf（如果已从 /mp/config 拿到）并同步最新开关。
+ * 服务端 /mp/* 写入路由已声明 csrf:false，这个字段被忽略；保留发送是为了
+ * 客户端先于服务端更新的场景下仍能通过旧版校验。
+ */
 async function ensureCsrf() {
   if (!state.csrf) await config()
   return state.csrf
@@ -93,9 +94,8 @@ async function post(path, body, opts = {}) {
   }
   let res = await send()
   if (res && res.statusCode === 419) {
-    // csrf 与当前会话不匹配（多见于冷启动并发建会话）：换一份 csrf 再试一次。
-    // 先等掉在途的 config——它本身会带回可用的 csrf；若没有在途的才另发一次，
-    // 始终保证同一时刻只有一个会写 cookie 的请求。
+    // 仅旧版服务端（仍校验会话令牌）会走到这里：刷新 csrf 再试一次。
+    // 先等掉在途的 config——它本身会带回可用的 csrf；若没有在途的才另发一次。
     state.csrf = ''
     if (configInFlight) {
       await configInFlight.catch(() => { /* 失败则走下面补发 */ })
