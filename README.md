@@ -15,7 +15,7 @@ V2「海盐天空」：浅灰蓝页面 + 白卡 + 天空蓝主色。
 - **我的**：照片头图 + 头部数据带 + 服务卡 + 四宫格 + 列表
 - **详情**：全幅封面 + 白色正文 + 黄色阅读提示 + 固定操作栏 + 返回顶部
 
-底栏为自绘 4 Tab PNG 图标：文章 / 微语 / 分类 / 我的。手绘插画放在 `src/static/illus/`；设计规范见 [`docs/UI-UPGRADE-PLAN-V2.md`](docs/UI-UPGRADE-PLAN-V2.md)，插画生成与映射见 [`docs/illustrations/README.md`](docs/illustrations/README.md)。界面无 CSS 渐变、无 emoji；文章卡圆角 10px，图片 8px。
+底栏为自绘 4 Tab PNG 图标：文章 / 微语 / 分类 / 我的。手绘插画放在 `src/static/illus/`；文章卡圆角 10px，图片 8px。
 
 ## 界面预览
 
