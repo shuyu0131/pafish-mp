@@ -1,24 +1,50 @@
 # pafish-mp
 
-纸鱼博客（pafish）的开源微信小程序前端：**uni-app + Vue3 + vite + [TDesign uni-app](https://tdesign.tencent.com/uniapp/overview)**，界面以 TDesign 原生样式为主，配套服务端插件 [`wechat_mp`](https://github.com/shuyu0301/pafish-php) 提供 `/mp/*` 接口。
+纸鱼博客（pafish）的开源微信小程序前端：**uni-app + Vue3 + vite**，自绘「海盐天空」界面，TDesign 仅用于底层图标与弹层；配套服务端插件 [`wechat_mp`](https://github.com/shuyu0131/pafish-php) 提供 `/mp/*` 接口。
 
 > 本仓库不包含任何服务端密钥。小程序只持有接口地址与用户自己的登录 token；微信 `AppSecret`、pafish `/api/v1` 的 `X-API-Key` 全部留在插件服务端。
 
 ## 界面
 
-直接使用 TDesign 默认视觉：品牌蓝主色、系统原生导航栏（`pages.json` 按页配置标题）、`t-tab-bar` 底部导航、`t-search` / `t-empty` / `t-skeleton` / `t-icon` 等原生组件。
+V2「海盐天空」：浅灰蓝页面 + 白卡 + 天空蓝主色。
+
+- **首页**：全幅天空插画 + 压在插画下缘的玻璃搜索条 + 白色公告卡 + 最多 4 个分类宫格 + Halo 文章卡
+- **分类**：两列大卡片，分类封面优先，无封面用品牌分类插画
+- **搜索**：首页搜索条直接输入，确认后原地切换为结果态，不跳转独立页面
+- **微语**：按天分组的白卡时间流，标题居中
+- **我的**：照片头图 + 头部数据带 + 服务卡 + 四宫格 + 列表
+- **详情**：全幅封面 + 白色正文 + 黄色阅读提示 + 固定操作栏 + 返回顶部
+
+底栏为自绘 4 Tab PNG 图标：文章 / 微语 / 分类 / 我的。手绘插画放在 `src/static/illus/`；设计规范见 [`docs/UI-UPGRADE-PLAN-V2.md`](docs/UI-UPGRADE-PLAN-V2.md)，插画生成与映射见 [`docs/illustrations/README.md`](docs/illustrations/README.md)。界面无 CSS 渐变、无 emoji；文章卡圆角 10px，图片 8px。
+
+## 界面预览
+
+> 截图来自 H5 构建 + 本地 mock 数据，用于展示布局与视觉；真实小程序以接口数据为准。
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/home.png" width="220" alt="首页" /><br/><sub>首页</sub></td>
+    <td align="center"><img src="docs/screenshots/category.png" width="220" alt="分类" /><br/><sub>分类</sub></td>
+    <td align="center"><img src="docs/screenshots/search.png" width="220" alt="搜索结果" /><br/><sub>搜索结果</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/micro.png" width="220" alt="微语" /><br/><sub>微语</sub></td>
+    <td align="center"><img src="docs/screenshots/mine.png" width="220" alt="我的" /><br/><sub>我的</sub></td>
+    <td align="center"><img src="docs/screenshots/detail.png" width="220" alt="文章详情" /><br/><sub>文章详情</sub></td>
+  </tr>
+</table>
 
 ## 功能
 
 | 页面 | 说明 |
 | --- | --- |
-| 首页 | 文章信息流、置顶标记、分类筛选、下拉刷新与分页加载 |
-| 文章详情 | 正文 rich-text 渲染（内联排版样式）、浏览量、点赞 / 收藏、评论列表与发表 |
-| 微语 | 时间流卡片（列表即完整正文，无详情页）、图片九宫格预览、点赞与修改标记、单条分享（对应插件 `/mp/micro-like`） |
-| 搜索 | 站内文章搜索 + 本地搜索历史（可在插件侧关闭） |
-| 我的 | 微信头像昵称填写授权登录、我的评论 / 收藏、浏览历史 |
+| 首页 | 天空插画、玻璃搜索、公告卡、分类宫格、Halo 文章流、置顶标记、分页 |
+| 分类 | 两列分类大卡，封面优先，点击回首页筛选 |
+| 搜索 | 首页输入、原地结果、搜索历史与空态（可在插件侧关闭） |
+| 文章详情 | 正文 rich-text 渲染、浏览量、点赞 / 收藏、评论、返回顶部 |
+| 微语 | 按天分组的时间流卡片、图片预览、点赞与修改标记、单条分享 |
+| 我的 | 微信头像昵称授权、评论 / 收藏 / 历史、照片头图数据带 |
 | 设置 / 关于 | 账号入口、清除缓存、站点与版本信息、退出登录 |
-| 分类 / 标签 | 走首页筛选与文章行内标签，不占用一级导航 |
 
 ## 审核合规设计
 
@@ -59,7 +85,7 @@ npm run build:mp-weixin   # 产物在 dist/build/mp-weixin
 
 - uni-app 3.x / Vue 3 / vite / `@tdesign/uniapp`（easycom `t-*`）
 - 状态与网络层自写在 `src/common/`（config / request / store / format / theme / history / mdcss）
-- 业务组件 easycom `zz-*`（卡片、文章行、微语卡、头像、底栏、登录弹层），无原生 tabBar，底栏用 `t-tab-bar` + `uni.reLaunch` 切换
+- 业务组件 easycom `zz-*`（导航、底栏、文章卡、搜索条、空态、骨架、操作栏、微语卡、评论、头像、登录弹层），无原生 tabBar，底栏用自绘 PNG 图标 + `uni.reLaunch` 切换
 
 ## 许可
 

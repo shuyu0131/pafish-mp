@@ -6,7 +6,7 @@ export const BASE_URL = 'https://ty.waikanl.cn'
 export const APP_VERSION = '1.0'
 
 // 开源仓库地址（设置页「项目开源地址」用，H5 里可跳转，小程序内复制提示）
-export const REPO_URL = 'https://github.com/shuyu0301/pafish-mp'
+export const REPO_URL = 'https://github.com/shuyu0131/pafish-mp'
 
 // storage keys
 export const K = {

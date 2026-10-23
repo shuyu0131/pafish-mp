@@ -1,45 +1,59 @@
 <template>
-  <view class="fpage">
+  <view class="fpage zz-page">
     <view v-if="closed" class="pad">
-      <t-empty description="收藏功能已关闭" icon="info-circle" />
+      <zz-empty type="closed" title="收藏功能已关闭" desc="该功能暂未开放" />
     </view>
+
     <view v-else-if="!logged" class="pad">
-      <t-empty description="登录后查看我的收藏" icon="user" />
-      <view class="retry" hover-class="zz-press-op" :hover-stay-time="60" @tap="askLogin">
-        <t-icon name="user" size="28rpx" color="#0052d9" />
-        <text class="retry-txt">去登录</text>
-      </view>
+      <zz-empty
+        type="favorites"
+        title="登录后查看我的收藏"
+        desc="把喜欢的文章收进自己的鱼塘"
+        action-text="去登录"
+        @action="askLogin"
+      />
     </view>
+
     <template v-else>
       <view v-if="firstLoading" class="pad">
-        <t-skeleton :row-col="skRows" animation="gradient" />
+        <zz-skeleton type="post" :rows="4" />
       </view>
+
       <view v-else-if="list.length" class="flist">
-        <zz-card v-for="p in list" :key="p.id" pad="22rpx 32rpx" press r="0" class="fv" @select="openPost(p)">
-          <view class="cv" :style="coverBg(p)">
-            <image v-if="p.coverUrl" class="cv-img" :src="p.coverUrl" mode="aspectFill" />
-            <t-icon v-else :name="coverStyle(p).icon" size="52rpx" :color="coverStyle(p).fg" />
+        <zz-card
+          v-for="p in list"
+          :key="p.id"
+          pad="20rpx 24rpx"
+          press
+          class="fv"
+          @select="openPost(p)"
+        >
+          <view class="fv-cover" :style="{ background: cat(p).bg }">
+            <image v-if="cover(p)" class="fv-img" :src="cover(p)" mode="aspectFill" />
+            <image v-else class="fv-art" :src="cat(p).art" mode="aspectFit" />
           </view>
-          <view class="fc">
-            <text class="h4">{{ p.title }}</text>
-            <text class="mt">{{ p.author || '纸鱼' }} · {{ fmtShort(p.favoritedAt) }} 收藏</text>
+          <view class="fv-main">
+            <text class="fv-title">{{ p.title }}</text>
+            <text class="fv-meta">{{ p.author || '纸鱼' }} · {{ fmtShort(p.favoritedAt) }} 收藏</text>
           </view>
-          <view class="un" hover-class="zz-press-op" :hover-stay-time="60" @tap.stop="unfav(p)">
-            <t-icon name="star-filled" size="34rpx" color="rgba(0,0,0,0.4)" />
-            <text class="un-txt">取消</text>
+          <view class="fv-un" hover-class="zz-press-op" :hover-stay-time="60" @tap.stop="unfav(p)">
+            <t-icon name="star-filled" size="30rpx" color="#e8b96a" />
+            <text>取消</text>
           </view>
         </zz-card>
-      </view>
-      <view v-else-if="!loading" class="pad">
-        <t-empty description="收藏夹还空着，看到好文就收进来" icon="star" />
-        <view class="retry" hover-class="zz-press-op" :hover-stay-time="60" @tap="goHome">
-          <t-icon name="book" size="28rpx" color="#0052d9" />
-          <text class="retry-txt">去逛逛</text>
+        <view class="more">
+          <text v-if="loading">正在加载…</text>
+          <text v-else-if="noMore">— 共 {{ total }} 篇 —</text>
         </view>
       </view>
-      <view v-if="list.length" class="more">
-        <text v-if="loading">正在加载…</text>
-        <text v-else-if="noMore">· 共 {{ total }} 篇 ·</text>
+
+      <view v-else-if="!loading" class="pad">
+        <zz-empty
+          type="favorites"
+          desc="遇到喜欢的文章就收进来"
+          action-text="去逛逛"
+          @action="goHome"
+        />
       </view>
     </template>
 
@@ -48,15 +62,13 @@
 </template>
 
 <script setup>
-// 我的收藏：服务端按收藏时间倒序，取消即时移除行。功能/登录开关兜底空态。
+// 我的收藏：服务端按收藏时间倒序，取消即时移除行。
 import { ref, computed } from 'vue'
 import { onLoad, onReachBottom } from '@dcloudio/uni-app'
 import { feat, auditMode, isLoggedIn, openLoginSheet } from '@/common/store.js'
 import { myFavorites, toggleFavorite, toast } from '@/common/request.js'
 import { fmtShort } from '@/common/format.js'
-import { coverStyle } from '@/common/theme.js'
-
-const skRows = [{ type: 'rect', width: '100%', height: '120rpx', size: '120rpx' }, { type: 'text' }]
+import { categoryStyle, postCover } from '@/common/theme.js'
 
 const list = ref([])
 const page = ref(1)
@@ -69,9 +81,8 @@ const closed = computed(() => !feat('favorite') || auditMode())
 const firstLoading = computed(() => loading.value && !list.value.length && !closed.value && logged.value)
 const noMore = computed(() => page.value >= totalPages.value)
 
-function coverBg(p) {
-  return p.coverUrl ? {} : { background: coverStyle(p).bg }
-}
+function cat(p) { return categoryStyle(p) }
+function cover(p) { return postCover(p) }
 
 async function run(reset) {
   if (loading.value || closed.value || !logged.value) return
@@ -118,32 +129,89 @@ onReachBottom(() => {
 </script>
 
 <style scoped>
-.flist { padding: 0; }
-.fv { display: flex; align-items: center; gap: 22rpx; border-bottom: 1rpx solid var(--zz-line); }
-.fv:last-child { border-bottom: none; }
-.cv {
-  width: 148rpx; height: 148rpx; border-radius: 12rpx; overflow: hidden; flex: none;
-  display: flex; align-items: center; justify-content: center; background: var(--zz-block);
+.flist {
+  padding: 20rpx 24rpx 16rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
 }
-.cv-img { width: 100%; height: 100%; }
-.fc { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12rpx; }
-.h4 {
-  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
-  font-size: 26rpx; font-weight: 600; color: var(--zz-ink); line-height: 1.5;
-}
-.mt { font-size: 22rpx; color: var(--zz-ink-3); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.un {
-  display: flex; flex-direction: column; align-items: center; gap: 8rpx; flex: none;
-  line-height: 1; padding: 12rpx 8rpx;
-}
-.un-txt { font-size: 20rpx; color: var(--zz-ink-3); }
 
-.more { text-align: center; padding: 24rpx 0 8rpx; }
-.more text { font-size: 24rpx; color: var(--zz-ink-3); }
-.pad { padding: 48rpx 32rpx 0; }
-.retry {
-  display: flex; align-items: center; justify-content: center; gap: 10rpx;
-  margin-top: 24rpx; padding: 14rpx 0; line-height: 1;
+.fv {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
 }
-.retry-txt { font-size: 26rpx; color: var(--zz-brand); }
+
+.fv-cover {
+  width: 132rpx;
+  height: 132rpx;
+  flex: none;
+  border-radius: 14rpx;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fv-img {
+  width: 100%;
+  height: 100%;
+}
+
+.fv-art {
+  width: 80%;
+  height: 80%;
+}
+
+.fv-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.fv-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 26rpx;
+  line-height: 1.45;
+  font-weight: 500;
+  color: var(--zz-ink);
+}
+
+.fv-meta {
+  font-size: 18rpx;
+  color: var(--zz-ink-3);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.fv-un {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+  padding: 8rpx 4rpx;
+  font-size: 16rpx;
+  color: var(--zz-ink-3);
+}
+
+.more {
+  padding: 20rpx 0 8rpx;
+  text-align: center;
+}
+
+.more text {
+  font-size: 20rpx;
+  color: var(--zz-ink-3);
+}
+
+.pad {
+  padding: 20rpx 24rpx;
+}
 </style>

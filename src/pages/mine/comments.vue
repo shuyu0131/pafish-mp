@@ -1,40 +1,48 @@
 <template>
-  <view class="cpage">
+  <view class="cpage zz-page">
     <view v-if="closed" class="pad">
-      <t-empty description="评论功能已关闭" icon="info-circle" />
+      <zz-empty type="closed" title="评论功能已关闭" desc="该功能暂未开放" />
     </view>
+
     <view v-else-if="!logged" class="pad">
-      <t-empty description="登录后查看我的评论" icon="user" />
-      <view class="retry" hover-class="zz-press-op" :hover-stay-time="60" @tap="askLogin">
-        <t-icon name="user" size="28rpx" color="#0052d9" />
-        <text class="retry-txt">去登录</text>
-      </view>
+      <zz-empty
+        type="comments"
+        title="登录后查看我的评论"
+        desc="你在纸鱼留下的每一句话"
+        action-text="去登录"
+        @action="askLogin"
+      />
     </view>
+
     <template v-else>
       <view v-if="list.length" class="cl">
-        <zz-card v-for="c in list" :key="c.id" pad="26rpx 32rpx" press r="0" class="myc">
+        <zz-card v-for="c in list" :key="c.id" pad="24rpx 26rpx" class="myc">
           <text class="p">{{ c.content }}</text>
-          <view v-if="c.postSlug" class="src" hover-class="zz-press" :hover-stay-time="60" @tap="openPost(c)">
-            <t-icon name="file-1" size="28rpx" color="rgba(0,0,0,0.4)" />
+          <view v-if="c.postSlug" class="src" hover-class="zz-press-op" :hover-stay-time="60" @tap="openPost(c)">
+            <t-icon name="file-1" size="26rpx" color="#9aa3ad" />
             <text class="spt">{{ c.postTitle || c.postSlug }}</text>
           </view>
           <view class="mt">
             <text class="tm">{{ fmtRel(c.createdAt) }}</text>
             <text v-if="c.status === 'PENDING'" class="pend">待审核</text>
-            <text v-if="c.postSlug" class="go" @tap="openPost(c)">查看原文 ›</text>
+            <text v-if="c.postSlug" class="go" @tap="openPost(c)">查看原文</text>
           </view>
         </zz-card>
       </view>
+
       <view v-else-if="!loading" class="pad">
-        <t-empty description="还没有发表过评论" icon="chat" />
-        <view class="retry" hover-class="zz-press-op" :hover-stay-time="60" @tap="goHome">
-          <t-icon name="book" size="28rpx" color="#0052d9" />
-          <text class="retry-txt">去逛逛</text>
-        </view>
+        <zz-empty
+          type="comments"
+          title="还没有发表过评论"
+          desc="去文章底下说点什么吧"
+          action-text="去逛逛"
+          @action="goHome"
+        />
       </view>
+
       <view v-if="list.length" class="more">
         <text v-if="loading">正在加载…</text>
-        <text v-else-if="noMore">· 到底啦 ·</text>
+        <text v-else-if="noMore">— 到底啦 —</text>
       </view>
     </template>
 
@@ -43,7 +51,7 @@
 </template>
 
 <script setup>
-// 我的评论：本地登录态下的个人 UGC 记录，待审核条目挂橙色徽章。
+// 我的评论：本地登录态下的个人 UGC 记录，待审核条目挂琥珀色徽章。
 import { ref, computed } from 'vue'
 import { onLoad, onReachBottom } from '@dcloudio/uni-app'
 import { feat, auditMode, isLoggedIn, openLoginSheet } from '@/common/store.js'
@@ -90,32 +98,84 @@ onReachBottom(() => {
 </script>
 
 <style scoped>
-.cl { padding: 0; }
-.myc { border-bottom: 1rpx solid var(--zz-line); }
-.myc:last-child { border-bottom: none; }
-.p { display: block; font-size: 28rpx; line-height: 1.75; color: var(--zz-ink); word-break: break-all; }
-.src {
-  display: flex; align-items: center; gap: 14rpx; margin-top: 18rpx;
-  background: var(--zz-block); border-radius: 12rpx; padding: 16rpx 20rpx;
+.cl {
+  padding: 20rpx 24rpx 16rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
 }
-.spt {
-  flex: 1; min-width: 0; font-size: 24rpx; color: var(--zz-ink-2);
-  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
-}
-.mt { display: flex; align-items: center; gap: 16rpx; margin-top: 18rpx; }
-.tm { font-size: 22rpx; color: var(--zz-ink-3); }
-.pend {
-  font-size: 20rpx; font-weight: 600; color: #be5a00; background: #fff1e9;
-  border-radius: 8rpx; padding: 4rpx 12rpx; line-height: 1.2;
-}
-.go { margin-left: auto; font-size: 24rpx; color: var(--zz-brand); font-weight: 600; }
 
-.more { text-align: center; padding: 24rpx 0 8rpx; }
-.more text { font-size: 24rpx; color: var(--zz-ink-3); }
-.pad { padding: 48rpx 32rpx 0; }
-.retry {
-  display: flex; align-items: center; justify-content: center; gap: 10rpx;
-  margin-top: 24rpx; padding: 14rpx 0; line-height: 1;
+.myc {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
 }
-.retry-txt { font-size: 26rpx; color: var(--zz-brand); }
+
+.p {
+  display: block;
+  font-size: 25rpx;
+  line-height: 1.7;
+  color: var(--zz-ink);
+  word-break: break-all;
+}
+
+.src {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  padding: 12rpx 16rpx;
+  border-radius: 12rpx;
+  background: var(--zz-paper);
+}
+
+.spt {
+  flex: 1;
+  min-width: 0;
+  font-size: 20rpx;
+  color: var(--zz-ink-2);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.mt {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.tm {
+  font-size: 18rpx;
+  color: var(--zz-ink-3);
+}
+
+.pend {
+  padding: 2rpx 10rpx;
+  border-radius: 8rpx;
+  background: #fff1e9;
+  color: #be5a00;
+  font-size: 17rpx;
+  font-weight: 600;
+}
+
+.go {
+  margin-left: auto;
+  font-size: 20rpx;
+  font-weight: 500;
+  color: var(--zz-brand-deep);
+}
+
+.more {
+  padding: 20rpx 0 8rpx;
+  text-align: center;
+}
+
+.more text {
+  font-size: 20rpx;
+  color: var(--zz-ink-3);
+}
+
+.pad {
+  padding: 20rpx 24rpx;
+}
 </style>

@@ -22,7 +22,9 @@ export const state = reactive({
     favorite: true, micro: true, search: true,
   },
   site: { name: '纸鱼博客', subtitle: '', description: '', url: BASE_URL },
-  banners: [],         // /mp/config.banners 插件配置的轮播横幅 [{image, slug}]；空 = 用内置默认
+  banners: [],         // 旧轮播配置，已不在前端展示；仅兼容其 title/text 作为公告
+  notice: '',          // /mp/config.notice 单条公告（字符串或 {text/content/title}）
+  notices: [],         // /mp/config.notices 多条公告
   postsPerPage: 10,
   csrf: '',
   configLoaded: false,
@@ -68,6 +70,8 @@ export function hydrate() {
     if (cfg.features) Object.assign(state.features, cfg.features)
     if (cfg.site) Object.assign(state.site, cfg.site)
     if (Array.isArray(cfg.banners)) state.banners = cfg.banners
+    if (cfg.notice) state.notice = cfg.notice
+    if (Array.isArray(cfg.notices)) state.notices = cfg.notices
     if (cfg.postsPerPage) state.postsPerPage = cfg.postsPerPage
   }
 }
@@ -93,6 +97,10 @@ export function applyConfig(data) {
   if (data.features) { state.features = Object.assign({}, state.features, data.features); ss(K.CONFIG, snapshotConfig()) }
   if (data.csrf) state.csrf = String(data.csrf)
   if (data.site) Object.assign(state.site, data.site)
+  const notice = data.notice !== undefined ? data.notice : data.announcement
+  if (typeof notice === 'string') state.notice = notice.trim()
+  else if (notice && typeof notice === 'object') state.notice = notice
+  if (Array.isArray(data.notices)) state.notices = data.notices
   if (Array.isArray(data.banners)) {
     state.banners = data.banners
     ss(K.CONFIG, snapshotConfig())
@@ -102,7 +110,14 @@ export function applyConfig(data) {
 }
 
 function snapshotConfig() {
-  return { features: state.features, site: state.site, banners: state.banners, postsPerPage: state.postsPerPage }
+  return {
+    features: state.features,
+    site: state.site,
+    banners: state.banners,
+    notice: state.notice,
+    notices: state.notices,
+    postsPerPage: state.postsPerPage,
+  }
 }
 
 export function clearAuth() {

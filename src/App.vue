@@ -17,21 +17,57 @@ export default {
 
 <style>
 /* ------------------------------------------------------------------
-   原生 TDesign 默认主题：白底页面、白卡、默认品牌蓝 #0052d9。
-   不做自定义色板，--zz-* 仅作为业务侧别名映射到 TDesign 原生取值，
-   页面与自定义组件内 var() 沿节点树继承均可取到。
+   V2「海盐天空」：浅灰蓝页面 + 白卡 + 天空蓝主色 + ColorUI 分类色。
+   所有页面统一从 --zz-* 取色；TDesign 只保留底层组件（icon/popup）。
 ------------------------------------------------------------------ */
 page {
-  --zz-paper: #ffffff;        /* 页面底 = 白 */
-  --zz-card: #ffffff;         /* 卡片 */
-  --zz-ink: rgba(0, 0, 0, 0.9);   /* 主文本 */
-  --zz-ink-2: rgba(0, 0, 0, 0.6); /* 次文本 */
-  --zz-ink-3: rgba(0, 0, 0, 0.4); /* 弱文本 / meta */
-  --zz-line: #e7e7e7;         /* 分隔线 = gray-3 */
-  --zz-block: #eeeeee;        /* 浅块（输入底、占位底）= gray-2 */
-  --zz-brand: #0052d9;        /* TDesign 默认品牌蓝 */
-  --zz-brand-deep: #003cab;   /* 按下态 */
-  --zz-brand-soft: #f2f3ff;   /* 选中浅底 */
+  --zz-paper: #f5f7fa;
+  --zz-card: #ffffff;
+  --zz-ink: #222831;
+  --zz-ink-2: #5b6470;
+  --zz-ink-3: #9aa3ad;
+  --zz-line: #edf1f4;
+
+  --zz-brand: #60c2ff;
+  --zz-brand-deep: #2fa8e8;
+  --zz-brand-soft: #e7f7ff;
+
+  --zz-orange: #f37b1d;
+  --zz-orange-soft: #fde6d2;
+  --zz-pink: #e03997;
+  --zz-pink-soft: #f9d7ea;
+  --zz-green: #39b54a;
+  --zz-green-soft: #d7f0db;
+  --zz-cyan: #1cbbb4;
+  --zz-cyan-soft: #d2f1f0;
+  --zz-purple: #6739b6;
+  --zz-purple-soft: #e1d7f0;
+  --zz-gold: #f6c445;
+  --zz-black: #22262e;
+
+  --zz-radius: 18rpx;
+  --zz-radius-lg: 28rpx;
+  --zz-shadow: 0 8rpx 28rpx rgba(31, 58, 87, .05);
+
+  /* TDesign 只保留 t-icon / t-popup 等底层组件；品牌色跟天空蓝走 */
+  --td-brand-color: #2fa8e8;
+  --td-brand-color-1: #e7f7ff;
+  --td-brand-color-2: #c9ecff;
+  --td-brand-color-3: #a6dfff;
+  --td-brand-color-4: #7fd0fb;
+  --td-brand-color-5: #5fc2f6;
+  --td-brand-color-6: #3fb4ee;
+  --td-brand-color-7: #2fa8e8;
+  --td-brand-color-8: #1f8cc6;
+  --td-brand-color-9: #136f9f;
+  --td-bg-color-page: #f5f7fa;
+  --td-bg-color-container: #ffffff;
+  --td-text-color-primary: #222831;
+  --td-text-color-secondary: #5b6470;
+  --td-text-color-placeholder: #9aa3ad;
+  --td-border-level-1-color: #edf1f4;
+  --td-radius-default: 6px;
+  --td-radius-large: 12px;
 
   background: var(--zz-paper);
   color: var(--zz-ink);
@@ -46,28 +82,41 @@ view, text, button, input, textarea, image {
   box-sizing: border-box;
 }
 
-/* 统一按压反馈（页面级元素用；自定义组件内需各自声明同款类）：
-   色块/行按压叠 5% 黑，无底色按钮与文字按压压到 55% 不透明度 */
-.zz-press { background-color: rgba(0, 0, 0, 0.05) !important; }
-.zz-press-op { opacity: 0.55; }
-
-/* 白底页面的分组分隔：16rpx 灰条（原页面底的 gray-1 收成分割线） */
-.zz-gap { height: 16rpx; background: #f3f3f3; }
-
-/* 空状态插图统一尺寸（t-empty 为 shared 隔离，全局样式可穿透；
-   t-image 无默认宽高，不约束会落到原生 image 的 320×240 兜底） */
-.t-empty__thumb .t-image {
-  width: 320rpx;
-  height: 320rpx;
+button::after {
+  border: none;
 }
 
-/* 搜索框样式：t-search 是 isolated 隔离，app.wxss 普通规则进不了组件内部，
-   必须经 t-class-input-container 外部样式类下发（搜索页的 t-search 挂了它；
-   首页/微语的只读搜索入口已改为原生 view 绘制，不走组件）。
-   组件默认边框色=背景色（视觉隐形），这里白底 + gray-3 描边；
-   border 加 !important 压掉组件聚焦态把 border-color 改回背景色的规则 */
-.search-box {
-  background: #ffffff;
-  border: 2rpx solid #e7e7e7 !important;
+/* 统一按压反馈 */
+.zz-press { background-color: rgba(0, 0, 0, .05) !important; }
+.zz-press-op { opacity: .55; }
+
+/* 页面壳 */
+.zz-page {
+  min-height: 100vh;
+  background: var(--zz-paper);
+}
+
+.zz-gutter {
+  padding-left: 32rpx;
+  padding-right: 32rpx;
+}
+
+.zz-safe-bottom {
+  height: calc(env(safe-area-inset-bottom) + 32rpx);
+}
+
+/* 页面底部提示 */
+.zz-end {
+  padding: 32rpx 0 16rpx;
+  text-align: center;
+  font-size: 20rpx;
+  color: #b4bdc6;
+  letter-spacing: .08em;
+}
+
+/* 兼容旧页面的灰条；V2 页面不再使用 */
+.zz-gap {
+  height: 24rpx;
+  background: transparent;
 }
 </style>

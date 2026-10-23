@@ -1,78 +1,75 @@
 <template>
-  <view class="about">
-    <!-- 站点身份卡：logo 用内置品牌标（本地打包深底白 P，与官网 SVG 同风格，不依赖远端 favicon） -->
-    <zz-card pad="36rpx 32rpx" r="0" class="hero">
-      <view class="idrow">
-        <image class="mark" src="/static/img/logo.png" mode="aspectFill" />
-        <view class="idc">
-          <text class="word">{{ siteName }}</text>
-          <text v-if="site.subtitle" class="sub">{{ site.subtitle }}</text>
-        </view>
+  <view class="about zz-page">
+    <view class="hero">
+      <image class="mark" src="/static/illus/tab-mine-on.png" mode="aspectFit" />
+      <view class="idc">
+        <text class="word">{{ siteName }}</text>
+        <text v-if="site.subtitle" class="sub">{{ site.subtitle }}</text>
       </view>
       <text v-if="site.description" class="desc">{{ site.description }}</text>
-    </zz-card>
+    </view>
 
     <view class="grp"><text class="grp-t">内容</text></view>
-    <zz-card pad="0" r="0" class="rows">
-      <view class="mi" hover-class="zz-press" :hover-stay-time="60" @tap="go('/pages/index/index')">
-        <t-icon name="book" size="40rpx" color="rgba(0,0,0,0.6)" />
+    <zz-card pad="0">
+      <view class="mi" hover-class="zz-press-op" :hover-stay-time="60" @tap="go('/pages/index/index')">
+        <t-icon name="book" size="34rpx" color="#8794a0" />
         <text class="lb">全部文章</text>
-        <t-icon name="chevron-right" size="32rpx" color="rgba(0,0,0,0.4)" />
+        <t-icon name="chevron-right" size="26rpx" color="#c2cad2" />
       </view>
-      <view class="mi" hover-class="zz-press" :hover-stay-time="60" @tap="go('/pages/micro/index')">
-        <t-icon name="chat" size="40rpx" color="rgba(0,0,0,0.6)" />
+      <view class="mi" hover-class="zz-press-op" :hover-stay-time="60" @tap="go('/pages/micro/index')">
+        <t-icon name="chat" size="34rpx" color="#8794a0" />
         <text class="lb">微语时间流</text>
-        <t-icon name="chevron-right" size="32rpx" color="rgba(0,0,0,0.4)" />
+        <t-icon name="chevron-right" size="26rpx" color="#c2cad2" />
       </view>
-      <view class="mi last" hover-class="zz-press" :hover-stay-time="60" @tap="go('/pages/search/index')">
-        <t-icon name="search" size="40rpx" color="rgba(0,0,0,0.6)" />
+      <view class="mi last" hover-class="zz-press-op" :hover-stay-time="60" @tap="go('/pages/search/index')">
+        <t-icon name="search" size="34rpx" color="#8794a0" />
         <text class="lb">搜索文章</text>
-        <t-icon name="chevron-right" size="32rpx" color="rgba(0,0,0,0.4)" />
+        <t-icon name="chevron-right" size="26rpx" color="#c2cad2" />
       </view>
     </zz-card>
 
     <view class="grp"><text class="grp-t">订阅</text></view>
-    <zz-card pad="0" r="0" class="rows">
-      <view class="mi" hover-class="zz-press" :hover-stay-time="60" @tap="copy(rssUrl, 'RSS 地址已复制，粘贴到阅读器即可订阅')">
-        <t-icon name="rss" size="40rpx" color="rgba(0,0,0,0.6)" />
+    <zz-card pad="0">
+      <view class="mi" hover-class="zz-press-op" :hover-stay-time="60" @tap="copy(rssUrl, 'RSS 地址已复制，粘贴到阅读器即可订阅')">
+        <t-icon name="rss" size="34rpx" color="#8794a0" />
         <text class="lb">RSS 订阅</text>
-        <t-icon name="chevron-right" size="32rpx" color="rgba(0,0,0,0.4)" />
+        <t-icon name="chevron-right" size="26rpx" color="#c2cad2" />
       </view>
-      <view v-if="site.url" class="mi last" hover-class="zz-press" :hover-stay-time="60" @tap="copy(site.url, '站点地址已复制，浏览器打开即可访问')">
-        <t-icon name="earth" size="40rpx" color="rgba(0,0,0,0.6)" />
+      <view v-if="site.url" class="mi last" hover-class="zz-press-op" :hover-stay-time="60" @tap="copy(site.url, '站点地址已复制，浏览器打开即可访问')">
+        <t-icon name="earth" size="34rpx" color="#8794a0" />
         <text class="lb">站点地址</text>
         <text class="tip">{{ shortUrl }}</text>
-        <t-icon name="chevron-right" size="32rpx" color="rgba(0,0,0,0.4)" />
+        <t-icon name="chevron-right" size="26rpx" color="#c2cad2" />
       </view>
     </zz-card>
 
     <view class="grp"><text class="grp-t">版本</text></view>
-    <zz-card pad="0" r="0" class="rows">
+    <zz-card pad="0">
       <view class="mi">
-        <t-icon name="mobile" size="40rpx" color="rgba(0,0,0,0.6)" />
+        <t-icon name="mobile" size="34rpx" color="#8794a0" />
         <text class="lb">小程序版本</text>
         <text class="tip">v{{ APP_VERSION }}</text>
       </view>
       <view class="mi last">
-        <t-icon name="app" size="40rpx" color="rgba(0,0,0,0.6)" />
+        <t-icon name="app" size="34rpx" color="#8794a0" />
         <text class="lb">接口插件</text>
         <text class="tip">{{ pluginVersion ? 'wechat_mp v' + pluginVersion : '—' }}</text>
       </view>
     </zz-card>
 
     <view class="grp"><text class="grp-t">相关链接</text></view>
-    <zz-card pad="0" r="0" class="rows">
-      <view class="mi" hover-class="zz-press" :hover-stay-time="60" @tap="copy(REPO_URL, '开源地址已复制')">
-        <t-icon name="code" size="40rpx" color="rgba(0,0,0,0.6)" />
+    <zz-card pad="0">
+      <view class="mi" hover-class="zz-press-op" :hover-stay-time="60" @tap="copy(REPO_URL, '开源地址已复制')">
+        <t-icon name="code" size="34rpx" color="#8794a0" />
         <text class="lb">开源仓库</text>
         <text class="tip">GitHub</text>
-        <t-icon name="chevron-right" size="32rpx" color="rgba(0,0,0,0.4)" />
+        <t-icon name="chevron-right" size="26rpx" color="#c2cad2" />
       </view>
-      <view class="mi last" hover-class="zz-press" :hover-stay-time="60" @tap="copy(REPO_URL + '/issues', '反馈地址已复制')">
-        <t-icon name="help-circle" size="40rpx" color="rgba(0,0,0,0.6)" />
+      <view class="mi last" hover-class="zz-press-op" :hover-stay-time="60" @tap="copy(REPO_URL + '/issues', '反馈地址已复制')">
+        <t-icon name="help-circle" size="34rpx" color="#8794a0" />
         <text class="lb">问题反馈</text>
         <text class="tip">GitHub Issues</text>
-        <t-icon name="chevron-right" size="32rpx" color="rgba(0,0,0,0.4)" />
+        <t-icon name="chevron-right" size="26rpx" color="#c2cad2" />
       </view>
     </zz-card>
 
@@ -82,8 +79,7 @@
 </template>
 
 <script setup>
-// 关于页：博客场景导航 —— 内容入口、RSS 订阅、版本与项目链接。
-// 插件版本读 /mp/config 的 version 字段（store.applyConfig 不留存，本页单独取一次）。
+// 关于页：品牌卡 + 内容入口 + RSS + 版本与项目链接。
 import { ref, computed } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { state } from '@/common/store.js'
@@ -95,7 +91,6 @@ const pluginVersion = ref('')
 const site = computed(() => state.site || {})
 const siteName = computed(() => site.value.name || '纸鱼博客')
 const shortUrl = computed(() => String(site.value.url || '').replace(/^https?:\/\//, ''))
-// 站点 RSS：/rss.xml（站点地址若缺失则退回接口域名）
 const rssUrl = computed(() => {
   const base = String(site.value.url || BASE_URL).replace(/\/+$/, '')
   return base + '/rss.xml'
@@ -115,32 +110,96 @@ function go(u) { uni.reLaunch({ url: u }) }
 </script>
 
 <style scoped>
-.hero { margin: 0; }
-.idrow { display: flex; align-items: center; gap: 24rpx; }
+.about {
+  padding: 20rpx 24rpx;
+}
+
+.hero {
+  padding: 26rpx;
+  border-radius: var(--zz-radius);
+  background: var(--zz-card);
+  box-shadow: var(--zz-shadow);
+}
+
 .mark {
-  width: 96rpx; height: 96rpx; border-radius: 12rpx;
-  flex: none;
+  width: 88rpx;
+  height: 88rpx;
+  display: block;
 }
-.idc { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8rpx; }
-.word { font-size: 34rpx; font-weight: 600; color: var(--zz-ink); }
-.sub { font-size: 24rpx; color: var(--zz-ink-3); }
+
+.idc {
+  margin-top: 16rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.word {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--zz-ink);
+}
+
+.sub {
+  font-size: 20rpx;
+  color: var(--zz-ink-3);
+}
+
 .desc {
-  display: block; font-size: 24rpx; color: var(--zz-ink-2); line-height: 1.7;
-  margin-top: 24rpx;
+  display: block;
+  margin-top: 16rpx;
+  font-size: 21rpx;
+  line-height: 1.7;
+  color: var(--zz-ink-2);
 }
 
-.grp { padding: 32rpx 32rpx 0; }
-.grp-t { display: block; font-size: 28rpx; font-weight: 600; color: var(--zz-ink); margin: 0 4rpx 16rpx; }
+.grp {
+  padding: 24rpx 4rpx 12rpx;
+}
 
-.rows { margin: 0; }
+.grp-t {
+  font-size: 19rpx;
+  font-weight: 500;
+  color: var(--zz-ink-3);
+  letter-spacing: .04em;
+}
+
 .mi {
-  display: flex; align-items: center; gap: 22rpx;
-  padding: 28rpx 32rpx; border-bottom: 1rpx solid var(--zz-line);
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  min-height: 86rpx;
+  padding: 0 22rpx;
+  border-bottom: 1rpx solid var(--zz-line);
 }
-.mi.last { border-bottom: none; }
-.lb { flex: 1; min-width: 0; font-size: 28rpx; color: var(--zz-ink); }
-.tip { font-size: 22rpx; color: var(--zz-ink-3); max-width: 320rpx; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
-.foot { display: block; text-align: center; font-size: 22rpx; color: var(--zz-ink-3); margin-top: 48rpx; }
-.page-bottom { height: calc(env(safe-area-inset-bottom) + 48rpx); }
+.mi.last { border-bottom: none; }
+
+.lb {
+  flex: 1;
+  min-width: 0;
+  font-size: 23rpx;
+  color: var(--zz-ink);
+}
+
+.tip {
+  max-width: 320rpx;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 18rpx;
+  color: var(--zz-ink-3);
+}
+
+.foot {
+  display: block;
+  margin-top: 32rpx;
+  text-align: center;
+  font-size: 18rpx;
+  color: #b4bdc6;
+}
+
+.page-bottom {
+  height: calc(env(safe-area-inset-bottom) + 32rpx);
+}
 </style>

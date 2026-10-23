@@ -1,12 +1,11 @@
 <template>
-  <!-- 通栏微语行：底色/内边距/分隔线由页面容器负责（白底 + 灰色分割线方案）。
-       列表接口已下发完整正文与配图，没有详情页，整卡不可点。 -->
+  <!-- 微语卡：白卡 + 头像/作者/时间 + 正文 + 1/2 列配图 + 点赞/分享。 -->
   <view class="zz-micro">
     <view class="zz-micro-head">
       <zz-avatar :url="avatarUrl" :name="authorName" :size="64" />
       <view class="zz-micro-head-txt">
         <text class="zz-micro-author">{{ authorName }}</text>
-        <text class="zz-micro-time">{{ fmtClock(item.publishedAt) }}<text v-if="edited"> · 修改于 {{ fmtClock(item.updatedAt) }}</text></text>
+        <text class="zz-micro-time">{{ fmtTime(item.publishedAt) }}<text v-if="edited"> · 修改于 {{ fmtClock(item.updatedAt) }}</text></text>
       </view>
       <text v-if="item.isPinned" class="zz-micro-pin">置顶</text>
     </view>
@@ -18,7 +17,8 @@
 
     <view v-if="media.length" class="zz-micro-media" :class="{ one: media.length === 1 }">
       <image
-        v-for="(u, i) in media" :key="i"
+        v-for="(u, i) in media"
+        :key="i"
         class="zz-micro-pic"
         :src="u"
         :mode="media.length === 1 ? 'widthFix' : 'aspectFill'"
@@ -29,12 +29,12 @@
     <view class="zz-micro-foot">
       <view v-if="showLike" class="zz-micro-act" :class="{ on: item.liked }" hover-class="zz-press-op" :hover-stay-time="60" @tap.stop="onLike">
         <t-icon :name="item.liked ? 'thumb-up-filled' : 'thumb-up'" size="30rpx"
-          :color="item.liked ? '#0052d9' : 'rgba(0,0,0,0.4)'" />
+          :color="item.liked ? '#f37b1d' : '#9aa3ad'" />
         <text class="zz-micro-act-txt">{{ fmtNum(item.likeCount || 0) }}</text>
       </view>
       <!-- #ifdef MP-WEIXIN -->
       <button v-if="!audit" class="zz-micro-act zz-micro-share" open-type="share" :data-id="item.id" hover-class="zz-press-op" :hover-stay-time="60" @tap.stop>
-        <t-icon name="share-1" size="30rpx" color="rgba(0,0,0,0.4)" />
+        <t-icon name="share-1" size="30rpx" color="#9aa3ad" />
         <text class="zz-micro-act-txt">分享</text>
       </button>
       <!-- #endif -->
@@ -43,10 +43,8 @@
 </template>
 
 <script>
-// 微语卡片：头像+昵称+时间 / Markdown 渲染后的正文 / 配图 / 点赞。
-// 点赞在卡内完成，受 like 开关与审核模式门控。
-// 无详情页：列表接口下发的就是完整正文（含 contentHtml 与 media），点卡片不再跳转。
-import { fmtClock, fmtNum } from '@/common/format.js'
+// 微语卡：列表接口已下发完整正文与配图，没有详情页，整卡不可点。
+import { fmtClock, fmtNum, fmtTime } from '@/common/format.js'
 import { styleHtml } from '@/common/mdcss.js'
 import { state, feat, auditMode } from '@/common/store.js'
 import { toggleMicroLike, ensureLogin, toast } from '@/common/request.js'
@@ -60,7 +58,6 @@ export default {
     authorName() { return (this.item.author && (this.item.author.name || this.item.author.nickname)) || '站长' },
     avatarUrl() { return (this.item.author && this.item.author.avatarUrl) || '' },
     sayNodes() { return styleHtml(this.item.contentHtml) },
-    // 服务端 media[] 为对象（含 url），兼容旧契约的纯字符串
     media() {
       return (this.item.media || [])
         .map((m) => (typeof m === 'string' ? m : (m && m.url) || ''))
@@ -75,7 +72,7 @@ export default {
     audit() { return state.features.auditMode },
   },
   methods: {
-    fmtClock, fmtNum,
+    fmtClock, fmtNum, fmtTime,
     preview(i) {
       uni.previewImage({ urls: this.media, current: i })
     },
@@ -97,39 +94,127 @@ export default {
 </script>
 
 <style scoped>
-.zz-micro { display: flex; flex-direction: column; }
-.zz-micro-head { display: flex; align-items: center; gap: 16rpx; }
-.zz-micro-head-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4rpx; }
-.zz-micro-author { font-size: 26rpx; font-weight: 600; color: var(--zz-ink); }
-.zz-micro-time { font-size: 22rpx; color: var(--zz-ink-3); }
+.zz-micro {
+  display: flex;
+  flex-direction: column;
+  padding: 22rpx;
+  background: var(--zz-card);
+  border-radius: var(--zz-radius);
+  box-shadow: var(--zz-shadow);
+}
+
+.zz-micro-head {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.zz-micro-head-txt {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.zz-micro-author {
+  font-size: 24rpx;
+  font-weight: 500;
+  color: var(--zz-ink);
+}
+
+.zz-micro-time {
+  font-size: 19rpx;
+  color: var(--zz-ink-3);
+}
+
 .zz-micro-pin {
-  font-size: 20rpx; color: var(--zz-brand);
-  background: var(--zz-brand-soft);
-  border-radius: 8rpx; padding: 4rpx 12rpx; flex: none;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6rpx;
+  color: #b07a1f;
+  font-size: 17rpx;
+  font-weight: 600;
+  line-height: 1.4;
 }
+
+.zz-micro-pin::before {
+  content: "";
+  width: 6rpx;
+  height: 6rpx;
+  border-radius: 50%;
+  background: #e8b96a;
+}
+
 .zz-micro-say {
-  font-size: 28rpx; line-height: 1.8; color: var(--zz-ink);
-  margin-top: 20rpx; word-break: break-all;
+  margin-top: 16rpx;
+  font-size: 26rpx;
+  line-height: 1.75;
+  color: var(--zz-ink);
+  word-break: break-all;
 }
-.zz-micro-media { margin-top: 20rpx; display: flex; flex-wrap: wrap; gap: 10rpx; }
-.zz-micro-pic { border-radius: 12rpx; background: var(--zz-block); }
-.zz-micro-media:not(.one) .zz-micro-pic { width: calc((100% - 20rpx) / 3); height: 218rpx; }
-.zz-micro-media.one .zz-micro-pic { width: 100%; max-height: 560rpx; }
+
+.zz-micro-media {
+  margin-top: 18rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.zz-micro-pic {
+  border-radius: 16rpx;
+  background: var(--zz-paper);
+}
+
+.zz-micro-media:not(.one) .zz-micro-pic {
+  width: calc((100% - 12rpx) / 2);
+  height: 240rpx;
+}
+
+.zz-micro-media.one .zz-micro-pic {
+  width: 100%;
+  max-height: 520rpx;
+}
+
 .zz-micro-foot {
-  display: flex; align-items: center; gap: 44rpx;
-  margin-top: 22rpx; padding-top: 18rpx;
+  display: flex;
+  align-items: center;
+  gap: 32rpx;
+  margin-top: 16rpx;
+  padding-top: 14rpx;
   border-top: 1rpx solid var(--zz-line);
 }
+
 .zz-micro-act {
-  display: flex; align-items: center; gap: 10rpx;
-  line-height: 1; padding: 6rpx 0;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  line-height: 1;
+  padding: 4rpx 0;
 }
-.zz-micro-act-txt { font-size: 24rpx; color: var(--zz-ink-3); }
-.zz-micro-act.on .zz-micro-act-txt { color: var(--zz-brand); }
+
+.zz-micro-act-txt {
+  font-size: 21rpx;
+  color: var(--zz-ink-3);
+}
+
+.zz-micro-act.on .zz-micro-act-txt {
+  color: var(--zz-orange);
+}
+
 .zz-micro-share {
-  background: transparent; border: none; padding: 6rpx 0; margin: 0; line-height: 1;
+  margin: 0;
+  background: transparent;
+  border: none;
+  padding: 4rpx 0;
 }
-.zz-micro-share::after { border: none; }
-/* 小程序组件样式隔离：按压态类需组件内自带 */
-.zz-press-op { opacity: 0.55; }
+
+.zz-micro-share::after {
+  border: none;
+}
+
+.zz-press-op {
+  opacity: .55;
+}
 </style>

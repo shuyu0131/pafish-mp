@@ -19,8 +19,10 @@ export function pushView(post) {
   if (hit) {
     hit.ts = ts
     hit.title = post.title || hit.title
+    if (post.category) hit.category = post.category
+    if (post.cover) hit.cover = post.cover
   } else {
-    list.unshift({ slug: post.slug, title: post.title || '', ts })
+    list.unshift({ slug: post.slug, title: post.title || '', category: post.category || '', cover: post.cover || '', ts })
   }
   save(K.HISTORY, list.slice(0, HISTORY_LIMIT))
 }

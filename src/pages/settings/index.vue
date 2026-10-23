@@ -1,38 +1,38 @@
 <template>
-  <view class="set">
+  <view class="set zz-page">
     <view v-if="loginOn" class="sec">
       <text class="grp">账号</text>
-      <zz-card pad="0" r="0">
-        <view class="mi last" hover-class="zz-press" :hover-stay-time="60" @tap="accountTap">
+      <zz-card pad="0">
+        <view class="mi last" hover-class="zz-press-op" :hover-stay-time="60" @tap="accountTap">
           <text class="lb">微信账号</text>
           <text class="tip">{{ accountTip }}</text>
-          <t-icon name="chevron-right" size="32rpx" color="rgba(0,0,0,0.4)" />
+          <t-icon name="chevron-right" size="26rpx" color="#c2cad2" />
         </view>
       </zz-card>
     </view>
 
     <view class="sec">
       <text class="grp">通用</text>
-      <zz-card pad="0" r="0">
-        <view class="mi last" hover-class="zz-press" :hover-stay-time="60" @tap="doClearCache">
+      <zz-card pad="0">
+        <view class="mi last" hover-class="zz-press-op" :hover-stay-time="60" @tap="doClearCache">
           <text class="lb">清除缓存</text>
           <text class="tip">{{ cacheTip }}</text>
-          <t-icon name="chevron-right" size="32rpx" color="rgba(0,0,0,0.4)" />
+          <t-icon name="chevron-right" size="26rpx" color="#c2cad2" />
         </view>
       </zz-card>
     </view>
 
     <view class="sec">
       <text class="grp">关于</text>
-      <zz-card pad="0" r="0">
-        <view class="mi" hover-class="zz-press" :hover-stay-time="60" @tap="go('/pages/settings/about')">
+      <zz-card pad="0">
+        <view class="mi" hover-class="zz-press-op" :hover-stay-time="60" @tap="go('/pages/settings/about')">
           <text class="lb">关于纸鱼博客</text>
-          <t-icon name="chevron-right" size="32rpx" color="rgba(0,0,0,0.4)" />
+          <t-icon name="chevron-right" size="26rpx" color="#c2cad2" />
         </view>
-        <view class="mi" hover-class="zz-press" :hover-stay-time="60" @tap="copyRepo">
+        <view class="mi" hover-class="zz-press-op" :hover-stay-time="60" @tap="copyRepo">
           <text class="lb">项目开源地址</text>
           <text class="tip">GitHub</text>
-          <t-icon name="chevron-right" size="32rpx" color="rgba(0,0,0,0.4)" />
+          <t-icon name="chevron-right" size="26rpx" color="#c2cad2" />
         </view>
         <view class="mi last">
           <text class="lb">当前版本</text>
@@ -116,25 +116,63 @@ onShow(() => { cacheChars.value = cacheSize() })
 </script>
 
 <style scoped>
-.sec { padding: 24rpx 0 0; }
+.set {
+  padding: 20rpx 24rpx;
+}
+
+.sec {
+  margin-bottom: 20rpx;
+}
+
 .grp {
-  display: block; font-size: 28rpx; font-weight: 600; color: var(--zz-ink);
-  margin: 0 36rpx 16rpx;
+  display: block;
+  margin: 0 4rpx 12rpx;
+  font-size: 19rpx;
+  font-weight: 500;
+  color: var(--zz-ink-3);
+  letter-spacing: .04em;
 }
+
 .mi {
-  display: flex; align-items: center; gap: 16rpx;
-  padding: 28rpx 32rpx; border-bottom: 1rpx solid var(--zz-line);
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  min-height: 86rpx;
+  padding: 0 22rpx;
+  border-bottom: 1rpx solid var(--zz-line);
 }
+
 .mi.last { border-bottom: none; }
-.lb { flex: 1; min-width: 0; font-size: 28rpx; font-weight: 400; color: var(--zz-ink); }
-.tip { font-size: 22rpx; color: var(--zz-ink-3); max-width: 320rpx; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+.lb {
+  flex: 1;
+  min-width: 0;
+  font-size: 23rpx;
+  color: var(--zz-ink);
+}
+
+.tip {
+  max-width: 320rpx;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 18rpx;
+  color: var(--zz-ink-3);
+}
 
 .logout {
-  margin: 40rpx 32rpx 0; background: var(--zz-card);
-  border: 2rpx solid var(--zz-line);
-  border-radius: 14rpx;
-  padding: 28rpx 0; text-align: center; font-size: 28rpx; font-weight: 600;
-  color: #d54941;
+  margin-top: 8rpx;
+  padding: 22rpx 0;
+  border-radius: var(--zz-radius);
+  background: var(--zz-card);
+  box-shadow: var(--zz-shadow);
+  text-align: center;
+  font-size: 23rpx;
+  font-weight: 600;
+  color: #c0392b;
 }
-.page-bottom { height: calc(env(safe-area-inset-bottom) + 48rpx); }
+
+.page-bottom {
+  height: calc(env(safe-area-inset-bottom) + 32rpx);
+}
 </style>

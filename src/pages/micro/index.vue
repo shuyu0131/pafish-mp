@@ -1,35 +1,41 @@
 <template>
-  <view class="mpage">
-    <view v-if="feat('search')" class="srow" @tap="goSearch">
-      <!-- 只读搜索入口：t-search 样式隔离穿不透，静态入口直接用原生 view 绘制，观感对齐 t-search -->
-      <view class="search-fake" hover-class="zz-press" :hover-stay-time="60">
-        <t-icon name="search" size="40rpx" color="rgba(0,0,0,0.26)" />
-        <text class="search-ph">搜索文章</text>
-      </view>
-    </view>
+  <view class="mpage zz-page">
+    <zz-navbar title="微语" center />
 
-    <view v-if="!feat('micro')" class="pad">
-      <t-empty description="微语功能已关闭" icon="info-circle" />
-    </view>
-
-    <view v-else class="mflow">
-      <view v-if="err && !list.length" class="pad">
-        <t-empty :description="err" icon="search" />
-        <view class="retry" hover-class="zz-press-op" :hover-stay-time="60" @tap="reload">
-          <t-icon name="refresh" size="28rpx" color="#0052d9" />
-          <text class="retry-txt">重新加载</text>
-        </view>
+    <view class="micro-wrap">
+      <view v-if="!feat('micro')" class="pad">
+        <zz-empty type="closed" title="微语功能已关闭" desc="该功能暂未开放" />
       </view>
-      <template v-else>
-        <view v-for="m in list" :key="m.id" class="flow-item">
-          <zz-micro-item :item="m" />
+
+      <view v-else class="mflow">
+        <view v-if="err && !list.length" class="pad">
+          <zz-empty type="offline" :desc="err" action-text="重新加载" @action="reload" />
         </view>
-        <t-empty v-if="!list.length && !loading" description="今天还没有新微语" icon="chat" />
-        <view v-if="list.length" class="more">
-          <text v-if="loading">正在加载更多…</text>
-          <text v-else-if="noMore">· 到底啦 ·</text>
-        </view>
-      </template>
+
+        <template v-else>
+          <view v-if="firstLoading" class="sk">
+            <zz-skeleton type="comment" :rows="3" />
+          </view>
+
+          <view v-else class="list">
+            <view v-for="g in groups" :key="g.key" class="day-group">
+              <view class="day-label">{{ g.label }}</view>
+              <zz-micro-item v-for="m in g.items" :key="m.id" :item="m" />
+            </view>
+          </view>
+
+          <zz-empty
+            v-if="!list.length && !loading"
+            type="comments"
+            title="今天还没有新微语"
+            desc="等站长写下第一条"
+          />
+          <view v-if="list.length" class="more">
+            <text v-if="loading">正在加载更多…</text>
+            <text v-else-if="noMore">— 今天就到这里 —</text>
+          </view>
+        </template>
+      </view>
     </view>
 
     <zz-tabbar active="micro" />
@@ -38,12 +44,12 @@
 </template>
 
 <script setup>
-// 微语时间流：单列卡片流，点赞在卡内完成（zz-micro-item 自理）。
-// 整个 Tab 由 features.micro 远程隐藏；本页直达时兜底显示「功能已关闭」。
+// 微语：白卡时间流，点赞在卡内完成；整个 Tab 由 features.micro 远程隐藏。
 import { ref, computed } from 'vue'
 import { onShow, onReachBottom, onPullDownRefresh, onShareAppMessage } from '@dcloudio/uni-app'
 import { state, feat, auditMode } from '@/common/store.js'
 import { micro } from '@/common/request.js'
+import { fmtDayLabel } from '@/common/format.js'
 
 const list = ref([])
 const page = ref(1)
@@ -52,6 +58,17 @@ const loading = ref(false)
 const err = ref('')
 
 const noMore = computed(() => page.value >= totalPages.value)
+const firstLoading = computed(() => loading.value && !list.value.length)
+const groups = computed(() => {
+  const out = []
+  for (const m of list.value) {
+    const label = fmtDayLabel(m.publishedAt)
+    const last = out[out.length - 1]
+    if (last && last.label === label) last.items.push(m)
+    else out.push({ key: label + '-' + (m.id || out.length), label, items: [m] })
+  }
+  return out
+})
 
 async function fetchPage(reset) {
   if (loading.value) return
@@ -72,8 +89,6 @@ async function fetchPage(reset) {
 
 function reload() { list.value = []; fetchPage(true) }
 
-function goSearch() { uni.navigateTo({ url: '/pages/search/index' }) }
-
 let inited = false
 onShow(() => {
   if (inited || !feat('micro')) return
@@ -93,37 +108,67 @@ onPullDownRefresh(async () => {
 })
 
 onShareAppMessage((res) => {
-  // 卡片上的分享按钮：微语没有详情页，分享统一指向时间流，标题带该条正文摘要
+  // 审核模式：任何分享都退回中性首页卡片
   if (auditMode()) return { title: state.site.name || '纸鱼博客', path: '/pages/index/index' }
   const id = res && res.from === 'button' && res.target && res.target.dataset.id
   if (id) {
     const hit = list.value.find((m) => String(m.id) === String(id))
     const text = hit ? String(hit.content || '').replace(/[#>*`\s]+/g, ' ').slice(0, 24) : ''
-    return { title: text || state.site.name || '纸鱼博客', path: '/pages/micro/index', imageUrl: '/static/img/share-fallback.png' }
+    return { title: text || state.site.name || '纸鱼博客', path: '/pages/micro/index', imageUrl: '/static/illus/share-brand.png' }
   }
-  return { title: state.site.name || '纸鱼博客', path: '/pages/micro/index', imageUrl: '/static/img/share-fallback.png' }
+  return { title: state.site.name || '纸鱼博客', path: '/pages/micro/index', imageUrl: '/static/illus/share-brand.png' }
 })
 </script>
 
 <style scoped>
-.srow { padding: 8rpx 32rpx 4rpx; }
+.micro-wrap {
+  padding: 8rpx 24rpx 20rpx;
+}
 
-.mflow { padding: 0; }
-.flow-item { padding: 24rpx 32rpx; border-bottom: 1rpx solid var(--zz-line); }
-.pad { padding: 48rpx 32rpx 0; }
-.retry {
-  display: flex; align-items: center; justify-content: center; gap: 10rpx;
-  margin-top: 24rpx; padding: 14rpx 0; line-height: 1;
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
 }
-.retry-txt { font-size: 26rpx; color: var(--zz-brand); }
-.more { text-align: center; padding: 8rpx 0 16rpx; }
-.more text { font-size: 24rpx; color: var(--zz-ink-3); }
-.search-fake {
-  display: flex; align-items: center; gap: 12rpx;
-  height: 80rpx; padding: 0 24rpx;
-  background: var(--zz-card);
-  border: 2rpx solid var(--zz-line);
-  border-radius: 12rpx;
+
+.day-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
 }
-.search-ph { font-size: 28rpx; color: var(--zz-ink-3); }
+
+.day-label {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding: 2rpx 4rpx 0;
+  font-size: 19rpx;
+  color: var(--zz-ink-3);
+  letter-spacing: .04em;
+}
+
+.day-label::after {
+  content: "";
+  flex: 1;
+  height: 1rpx;
+  background: var(--zz-line);
+}
+
+.pad {
+  padding-top: 14rpx;
+}
+
+.sk {
+  padding: 8rpx 0;
+}
+
+.more {
+  padding: 20rpx 0 8rpx;
+  text-align: center;
+}
+
+.more text {
+  font-size: 20rpx;
+  color: var(--zz-ink-3);
+}
 </style>

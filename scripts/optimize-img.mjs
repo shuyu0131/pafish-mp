@@ -2,7 +2,7 @@
 // 不是单文件上限）。默认横幅只留一张，所以可以直接按原始 1200px 宽、较高质量出图。
 // 运行：node scripts/optimize-img.mjs
 import sharp from 'sharp'
-import { stat, rename, writeFile } from 'node:fs/promises'
+import { stat, rename, writeFile, readdir } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
@@ -36,6 +36,14 @@ await write(logo, await sharp(logo).resize({ width: 192 }).png({ palette: true, 
 await report('logo.png')
 
 await report('share-fallback.png')
+
+// 品牌插画（docs/illustrations/png 的打包副本）
+const ILLUS = path.join(DIR, '..', 'illus')
+for (const name of (await readdir(ILLUS)).sort()) {
+  const { size } = await stat(path.join(ILLUS, name))
+  total += size
+  console.log(name.padEnd(20), (size / 1024).toFixed(1) + ' KB')
+}
 
 console.log('-'.repeat(32))
 console.log('合计'.padEnd(20), (total / 1024).toFixed(1) + ' KB / 200 KB')

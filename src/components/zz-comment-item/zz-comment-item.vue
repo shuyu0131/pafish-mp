@@ -21,8 +21,7 @@
 </template>
 
 <script>
-// 评论条目：单字头像 + 昵称/时间 + 正文 + 回复；父评论引用以浅底块呈现。
-// /mp/comments 返回不含父级内容时 parentContent 为空，块自动隐藏。
+// 评论条目：头像 + 昵称/作者徽章/时间 + 正文 + 父评论引用。
 import { fmtRel } from '@/common/format.js'
 
 export default {
@@ -38,31 +37,94 @@ export default {
 </script>
 
 <style scoped>
-.zz-cmt { display: flex; gap: 18rpx; padding: 26rpx 0; }
-.zz-cmt-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8rpx; }
-.zz-cmt-line1 { display: flex; align-items: center; gap: 12rpx; }
-.zz-cmt-author { font-size: 24rpx; font-weight: 600; color: var(--zz-ink-2); }
+.zz-cmt {
+  display: flex;
+  gap: 16rpx;
+  padding: 20rpx 0;
+}
+
+.zz-cmt-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.zz-cmt-line1 {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.zz-cmt-author {
+  font-size: 23rpx;
+  font-weight: 500;
+  color: var(--zz-ink-2);
+}
+
 .zz-cmt-pin {
-  font-size: 20rpx; color: var(--zz-brand);
-  border: 1rpx solid var(--zz-brand); border-radius: 8rpx;
-  padding: 0 8rpx; line-height: 28rpx;
+  display: inline-flex;
+  align-items: center;
+  gap: 5rpx;
+  color: #b07a1f;
+  font-size: 17rpx;
+  font-weight: 600;
+  line-height: 1.2;
 }
+
+.zz-cmt-pin::before {
+  content: "";
+  width: 5rpx;
+  height: 5rpx;
+  border-radius: 50%;
+  background: #e8b96a;
+}
+
 .zz-cmt-badge {
-  font-size: 20rpx; color: var(--zz-brand);
-  background: var(--zz-brand-soft); border-radius: 8rpx;
-  padding: 0 8rpx; line-height: 28rpx;
+  padding: 0 8rpx;
+  border-radius: 8rpx;
+  background: var(--zz-brand-soft);
+  color: var(--zz-brand-deep);
+  font-size: 17rpx;
+  line-height: 30rpx;
 }
-.zz-cmt-time { font-size: 22rpx; color: var(--zz-ink-3); margin-left: auto; }
-.zz-cmt-content { font-size: 28rpx; color: var(--zz-ink); line-height: 1.6; word-break: break-all; }
-.zz-cmt-actions { display: flex; }
-.zz-cmt-reply { font-size: 22rpx; color: var(--zz-ink-3); }
+
+.zz-cmt-time {
+  margin-left: auto;
+  font-size: 19rpx;
+  color: var(--zz-ink-3);
+}
+
+.zz-cmt-content {
+  font-size: 26rpx;
+  line-height: 1.65;
+  color: var(--zz-ink);
+  word-break: break-all;
+}
+
+.zz-cmt-actions {
+  display: flex;
+}
+
+.zz-cmt-reply {
+  font-size: 20rpx;
+  color: var(--zz-ink-3);
+}
+
 .zz-cmt-parent {
-  background: var(--zz-block);
+  padding: 12rpx 16rpx;
   border-radius: 12rpx;
-  padding: 14rpx 18rpx;
+  background: var(--zz-paper);
 }
+
 .zz-cmt-parent-txt {
-  font-size: 24rpx; color: var(--zz-ink-2); line-height: 1.5;
-  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 22rpx;
+  line-height: 1.55;
+  color: var(--zz-ink-2);
 }
 </style>

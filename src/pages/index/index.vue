@@ -1,107 +1,302 @@
 <template>
-  <view class="home">
-    <!-- 顶栏：搜索入口（search 关闭时隐藏）+ 分类 Chips -->
-    <view class="hd">
-      <view v-if="feat('search')" class="srow" @tap="goSearch">
-        <!-- 只读搜索入口：t-search 样式隔离穿不透，静态入口直接用原生 view 绘制，观感对齐 t-search -->
-        <view class="search-fake" hover-class="zz-press" :hover-stay-time="60">
-          <t-icon name="search" size="40rpx" color="rgba(0,0,0,0.26)" />
-          <text class="search-ph">搜索文章</text>
+  <view class="home zz-page">
+    <template v-if="!searchMode">
+    <view class="sky">
+      <image class="sky-img" src="/static/illus/sky-bg.png" mode="aspectFill" />
+      <zz-navbar variant="sky" />
+    </view>
+
+    <view v-if="feat('search')" class="home-search-wrap">
+      <zz-search-bar
+        v-model="keyword"
+        overlap
+        @search="doSearch"
+        @clear="clearKeyword"
+      />
+    </view>
+
+    <view v-if="noticeList.length" class="notice-card" hover-class="zz-press-op" :hover-stay-time="60" @tap="nextNotice">
+      <view class="notice-icon">
+        <t-icon name="notification" size="26rpx" color="#e6811d" />
+      </view>
+      <text class="notice-label">公告</text>
+      <text class="notice-text">{{ currentNotice }}</text>
+      <view v-if="noticeList.length > 1" class="notice-all">
+        <text>全部</text>
+        <t-icon name="chevron-right" size="22rpx" color="#9aa3ad" />
+      </view>
+    </view>
+
+    <view v-if="quicks.length" class="quick-grid">
+      <view
+        v-for="q in quicks"
+        :key="q.key"
+        class="quick"
+        :class="{ on: cat === q.slug }"
+        hover-class="zz-press-op"
+        :hover-stay-time="60"
+        @tap="toggleCat(q.slug)"
+      >
+        <image class="quick-art" :src="q.art" :mode="q.fit" />
+        <text class="quick-label">{{ q.name }}</text>
+      </view>
+    </view>
+
+    <view class="section">
+      <zz-section-head
+        icon="book"
+        title="最新文章"
+        :sub="feed.length ? feed.length + ' 篇' : ''"
+      />
+
+      <view v-if="firstLoading" class="sk">
+        <zz-skeleton type="post" :rows="3" />
+      </view>
+
+      <view v-else-if="feed.length" class="feed">
+        <zz-article-row v-for="p in feed" :key="p.id" :post="p" @select="openPost(p)" />
+        <view class="more">
+          <text v-if="loadingMore">正在加载更多…</text>
+          <text v-else-if="noMore">— 到底啦 —</text>
         </view>
       </view>
-      <scroll-view class="chips" scroll-x enable-flex :show-scrollbar="false">
-        <view class="chip" :class="{ on: cat === '' }" hover-class="zz-press" :hover-stay-time="60" @tap="pickCat('')">全部</view>
-        <view
-          v-for="c in topCats" :key="c.slug"
-          class="chip" :class="{ on: cat === c.slug }"
-          hover-class="zz-press" :hover-stay-time="60"
-          @tap="pickCat(c.slug)"
-        >{{ c.name }}</view>
-      </scroll-view>
-    </view>
 
-    <!-- 横幅：插件配置 > 带封面文章 > 内置默认图（仅全部分类下展示）。
-         只有一张时直接画图，不再套 swiper——单页轮播只剩一个圆点，还会空转自动播放 -->
-    <view v-if="cat === '' && banner.length" class="banner">
-      <image
-        v-if="banner.length === 1"
-        class="banner-one"
-        :src="bannerImgs[0]"
-        mode="aspectFill"
-        @tap="onBannerTap({ index: 0 })"
+      <zz-empty
+        v-else-if="err"
+        type="offline"
+        :desc="err"
+        action-text="重新加载"
+        @action="reload"
       />
-      <t-swiper
+      <zz-empty
         v-else
-        :list="bannerImgs"
-        height="340rpx"
-        :autoplay="true"
-        :interval="4500"
-        :duration="300"
-        :loop="true"
-        :navigation="{ type: 'dots' }"
-        @click="onBannerTap"
+        type="posts"
+        :title="cat ? '这个分类下还空着' : '还没有文章'"
+        :desc="cat ? '换个分类看看，或者去分类页逛逛' : '等第一篇文章落下来'"
+        action-text="去分类看看"
+        @action="goCategories"
       />
     </view>
 
-    <!-- 首屏骨架：三行列表占位 -->
-    <view v-if="firstLoading" class="sk">
-      <t-skeleton :row-col="skRows" :loading="true" />
-    </view>
+    </template>
 
-    <view v-else-if="list.length" class="feed">
-      <view v-for="p in list" :key="p.id" class="feed-item">
-        <zz-article-row :post="p" @select="openPost(p)" />
-      </view>
-      <view class="more">
-        <text v-if="loadingMore">正在加载更多…</text>
-        <text v-else-if="noMore">· 没有更多文章了 ·</text>
-      </view>
-    </view>
+    <template v-else>
+      <zz-navbar title="搜索">
+        <template #right>
+          <view class="search-cancel" @tap="exitSearch">取消</view>
+        </template>
+      </zz-navbar>
 
-    <view v-else class="pad-empty">
-      <t-empty :description="err || emptyText" icon="search" />
-      <view v-if="err" class="retry" hover-class="zz-press-op" :hover-stay-time="60" @tap="reload">
-        <t-icon name="refresh" size="28rpx" color="#0052d9" />
-        <text class="retry-txt">重新加载</text>
+      <view class="search-mode-wrap">
+        <zz-search-bar
+          v-model="keyword"
+          @search="doSearch"
+          @clear="clearKeyword"
+        />
       </view>
-    </view>
 
-    <zz-tabbar active="home" />
+      <view class="section search-results">
+        <zz-section-head
+          icon="search"
+          title="搜索结果"
+          :sub="searchTotal ? searchTotal + ' 篇' : ''"
+        />
+
+        <view v-if="searchFirstLoading" class="sk">
+          <zz-skeleton type="post" :rows="3" />
+        </view>
+
+        <view v-else-if="searchList.length" class="feed">
+          <zz-article-row v-for="p in searchList" :key="p.id" :post="p" @select="openPost(p)" />
+          <view class="more">
+            <text v-if="searchLoading">正在加载更多…</text>
+            <text v-else-if="searchNoMore">— 没有更多结果 —</text>
+          </view>
+        </view>
+
+        <zz-empty
+          v-else-if="searchErr"
+          type="offline"
+          :desc="searchErr"
+          action-text="重新搜索"
+          @action="retrySearch"
+        />
+        <zz-empty
+          v-else
+          type="search"
+          :title="'没有找到「' + searchQ + '」'"
+          desc="换个关键词试试"
+          action-text="返回首页"
+          @action="exitSearch"
+        />
+      </view>
+    </template>
+
+    <zz-tabbar active="posts" />
     <zz-login-sheet />
   </view>
 </template>
 
 <script setup>
-// 首页：单栏文章流。置顶/排序由服务端处理，前端只做分页拼接。
-// 顶部轮播复用「全部」首页数据里带封面的文章，不额外发请求。
+// 首页：天空头图 + 公告 + 图片轮播 + 分类四宫格 + 文章卡流。
+// 数据仍走 /mp/posts + /mp/categories；分类切换用服务端 category 参数。
 import { ref, computed } from 'vue'
-import { onShow, onReachBottom, onPullDownRefresh } from '@dcloudio/uni-app'
+import { onLoad, onShow, onReachBottom, onPullDownRefresh } from '@dcloudio/uni-app'
 import { state, feat } from '@/common/store.js'
 import { posts, categories } from '@/common/request.js'
-import { usableCover } from '@/common/theme.js'
+import { categoryCover } from '@/common/theme.js'
+import { pushSearch } from '@/common/history.js'
+
+const QUICK_DEFS = [
+  { key: 'tech', keys: ['技术', '开发', '编程', '代码', 'tech'], art: '/static/illus/cat-tech.png' },
+  { key: 'build', keys: ['建站', '博客', '主题', '插件', 'blog'], art: '/static/illus/cat-build.png' },
+  { key: 'life', keys: ['生活', '日常', 'life'], art: '/static/illus/cat-life.png' },
+  { key: 'essay', keys: ['随笔', '记录', '读书', 'note'], art: '/static/illus/cat-essay.png' },
+]
 
 const list = ref([])
 const cats = ref([])
-const cat = ref('')      // 当前分类 slug，'' = 全部
-const banner = ref([])   // 轮播 [{img, slug}]（仅全部分类下展示）
+const cat = ref('')
+const initialCat = ref('')
 const page = ref(1)
-
-// 内置默认横幅：图库真实照片（本地打包非热链，无中文文案）；插件端配置 banners 后优先用配置。
-// 只保留一张——微信「代码质量」按包内图片音频总量卡 200K，多张实拍图很容易触线。
-const DEFAULT_BANNERS = [
-  { img: '/static/img/banner-1.jpg', slug: '' },
-]
-const bannerImgs = computed(() => banner.value.map((b) => b.img))
 const totalPages = ref(1)
 const loading = ref(false)
 const err = ref('')
 
-const topCats = computed(() => cats.value.filter((c) => !c.parentId))
+const keyword = ref('')
+const searchMode = ref(false)
+const searchQ = ref('')
+const searchList = ref([])
+const searchPage = ref(1)
+const searchTotalPages = ref(1)
+const searchTotal = ref(0)
+const searchLoading = ref(false)
+const searchErr = ref('')
+
+function noticeOf(n) {
+  if (!n) return ''
+  if (typeof n === 'string') return n.trim()
+  if (typeof n === 'object') return String(n.text || n.content || n.title || '').trim()
+  return ''
+}
+const noticeIndex = ref(0)
+const noticeList = computed(() => {
+  const out = []
+  const one = noticeOf(state.notice)
+  if (one) out.push(one)
+  for (const n of (state.notices || [])) {
+    const t = noticeOf(n)
+    if (t) out.push(t)
+  }
+  if (!out.length) {
+    for (const b of (state.banners || [])) {
+      const t = noticeOf(b && (b.title || b.text))
+      if (t) out.push(t)
+    }
+  }
+  if (!out.length) out.push(`${state.site.name || '纸鱼博客'} 已上线，文章与微语都可以在这里读到。`)
+  return out
+})
+const currentNotice = computed(() => {
+  const list = noticeList.value
+  return list[noticeIndex.value % list.length] || ''
+})
+function nextNotice() {
+  if (noticeList.value.length > 1) {
+    noticeIndex.value = (noticeIndex.value + 1) % noticeList.value.length
+  }
+}
+
+const feed = computed(() => list.value)
+
+const quicks = computed(() => {
+  const top = cats.value.filter((c) => !c.parentId)
+  const used = new Set()
+  const out = []
+  for (const def of QUICK_DEFS) {
+    const hit = top.find((c) => !used.has(c.slug) && def.keys.some((k) => String(c.name || '').toLowerCase().includes(String(k).toLowerCase())))
+    if (hit) {
+      used.add(hit.slug)
+      const cover = categoryCover(hit)
+      out.push({ key: def.key, name: hit.name, slug: hit.slug, art: cover || def.art, fit: cover ? 'aspectFill' : 'aspectFit' })
+    }
+  }
+  for (const c of top) {
+    if (out.length >= 4) break
+    if (used.has(c.slug)) continue
+    const def = QUICK_DEFS[out.length] || QUICK_DEFS[QUICK_DEFS.length - 1]
+    used.add(c.slug)
+    const cover = categoryCover(c)
+    out.push({ key: def.key + c.slug, name: c.name, slug: c.slug, art: cover || def.art, fit: cover ? 'aspectFill' : 'aspectFit' })
+  }
+  return out.slice(0, 4)
+})
 const firstLoading = computed(() => loading.value && !list.value.length)
 const loadingMore = computed(() => loading.value && list.value.length > 0)
 const noMore = computed(() => page.value >= totalPages.value)
-const emptyText = computed(() => (cat.value ? '这个分类下还空着' : '还没有文章'))
-const skRows = [{ type: 'rect', height: '160rpx', width: '100%' }, { type: 'text', width: '80%' }, { type: 'text', width: '50%' }, { type: 'rect', height: '160rpx', width: '100%' }, { type: 'text', width: '70%' }, { type: 'text', width: '40%' }]
+
+const searchFirstLoading = computed(() => searchLoading.value && !searchList.value.length)
+const searchNoMore = computed(() => searchPage.value >= searchTotalPages.value)
+
+async function fetchSearch(reset) {
+  if (searchLoading.value) return
+  searchLoading.value = true
+  if (reset) {
+    searchErr.value = ''
+    searchPage.value = 1
+    searchTotalPages.value = 1
+  }
+  try {
+    const r = await posts({
+      page: searchPage.value,
+      perPage: state.postsPerPage,
+      q: searchQ.value,
+    })
+    const items = r.posts || []
+    searchList.value = reset ? items : searchList.value.concat(items)
+    searchTotalPages.value = r.totalPages || 1
+    searchTotal.value = r.total || searchList.value.length
+    searchErr.value = ''
+  } catch (e) {
+    searchErr.value = (e && e.message) || '搜索失败'
+    if (reset) searchList.value = []
+    searchTotalPages.value = 1
+  } finally {
+    searchLoading.value = false
+  }
+}
+
+function doSearch() {
+  if (!feat('search')) return
+  const q = keyword.value.trim()
+  if (!q) return
+  searchQ.value = q
+  searchMode.value = true
+  searchPage.value = 1
+  searchTotal.value = 0
+  searchList.value = []
+  searchErr.value = ''
+  pushSearch(q)
+  uni.pageScrollTo({ scrollTop: 0, duration: 200 })
+  fetchSearch(true)
+}
+
+function retrySearch() { fetchSearch(true) }
+
+function exitSearch() {
+  searchMode.value = false
+  keyword.value = ''
+  searchQ.value = ''
+  searchList.value = []
+  searchErr.value = ''
+  searchLoading.value = false
+  uni.pageScrollTo({ scrollTop: 0, duration: 200 })
+}
+
+function clearKeyword() {
+  keyword.value = ''
+  if (searchMode.value) exitSearch()
+}
 
 async function fetchPage(reset) {
   if (loading.value) return
@@ -115,12 +310,11 @@ async function fetchPage(reset) {
     })
     const items = r.posts || []
     list.value = reset ? items : list.value.concat(items)
-    if (reset) banner.value = buildBanner(items)
     totalPages.value = r.totalPages || 1
     err.value = ''
   } catch (e) {
     err.value = (e && e.message) || '加载失败'
-    if (reset) { list.value = []; banner.value = [] }
+    if (reset) list.value = []
   } finally {
     loading.value = false
   }
@@ -128,103 +322,209 @@ async function fetchPage(reset) {
 
 function reload() { fetchPage(true) }
 
-/** 轮播来源：插件配置横幅优先，其次带封面的文章，最后内置默认横幅（最多 5 张） */
-function buildBanner(items) {
-  if (cat.value !== '') return []
-  const cfg = (state.banners || [])
-    .filter((b) => b && usableCover(b.image))
-    .slice(0, 5)
-    .map((b) => ({ img: usableCover(b.image), slug: b.slug || '' }))
-  if (cfg.length) return cfg
-  const covers = items.filter((p) => usableCover(p.coverUrl)).slice(0, 5)
-    .map((p) => ({ img: usableCover(p.coverUrl), slug: p.slug }))
-  return covers.length ? covers : DEFAULT_BANNERS
-}
-
-function pickCat(slug) {
-  if (cat.value === slug) return
-  cat.value = slug
+function toggleCat(slug) {
+  if (!slug) return
+  const next = cat.value === slug ? '' : slug
+  if (next === cat.value) return
+  cat.value = next
   list.value = []
   uni.pageScrollTo({ scrollTop: 0, duration: 200 })
   fetchPage(true)
 }
 
-function goSearch() { uni.navigateTo({ url: '/pages/search/index' }) }
-function openPost(p) { uni.navigateTo({ url: '/pages/post/detail?slug=' + encodeURIComponent(p.slug) }) }
-function onBannerTap(e) {
-  const b = banner.value[e && e.index]
-  if (b && b.slug) openPost({ slug: b.slug })
+function goCategories() {
+  uni.reLaunch({ url: '/pages/category/index' })
 }
+function openPost(p) { uni.navigateTo({ url: '/pages/post/detail?slug=' + encodeURIComponent(p.slug) }) }
 
 let inited = false
+onLoad((q) => { initialCat.value = String((q && q.cat) || '') })
 onShow(() => {
   if (inited) return
   inited = true
+  cat.value = initialCat.value
   fetchPage(true)
-  categories().then((r) => { cats.value = r.categories || [] }).catch(() => { /* 分类条缺席不影响正文 */ })
+  categories().then((r) => { cats.value = r.categories || [] }).catch(() => { /* 分类缺席不影响正文 */ })
 })
 
 onReachBottom(() => {
+  if (searchMode.value) {
+    if (searchLoading.value || searchNoMore.value) return
+    searchPage.value += 1
+    fetchSearch(false)
+    return
+  }
   if (loading.value || noMore.value) return
   page.value += 1
   fetchPage(false)
 })
 
 onPullDownRefresh(async () => {
-  await fetchPage(true)
+  if (searchMode.value) await fetchSearch(true)
+  else await fetchPage(true)
   uni.stopPullDownRefresh()
 })
 </script>
 
 <style scoped>
-.hd {
-  position: sticky; top: 0; z-index: 30;
-  background: var(--zz-paper);
-  border-bottom: 1rpx solid var(--zz-line);
+.home {
+  padding-bottom: 16rpx;
 }
-.srow { padding: 8rpx 32rpx 4rpx; }
-.search-fake {
-  display: flex; align-items: center; gap: 12rpx;
-  height: 80rpx; padding: 0 24rpx;
+
+.sky {
+  position: relative;
+  height: 556rpx;
+  overflow: hidden;
+  background-color: #beebff;
+  box-shadow: 0 20rpx 40rpx rgba(190, 235, 255, .7);
+}
+
+.sky-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.home-search-wrap {
+  position: relative;
+  z-index: 3;
+  margin: -48rpx 72rpx 0;
+}
+
+/* 搜索态 */
+.search-cancel {
+  padding: 10rpx 0 10rpx 16rpx;
+  font-size: 23rpx;
+  font-weight: 500;
+  color: var(--zz-brand-deep);
+}
+
+.search-mode-wrap {
+  padding: 12rpx 60rpx 0;
+}
+
+.search-results {
+  padding-top: 16rpx;
+}
+
+/* 公告卡 */
+.notice-card {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  min-height: 96rpx;
+  margin: 20rpx 36rpx 0;
+  padding: 0 22rpx;
+  border-radius: 24rpx;
   background: var(--zz-card);
-  border: 2rpx solid var(--zz-line);
-  border-radius: 12rpx;
+  box-shadow: var(--zz-shadow);
 }
-.search-ph { font-size: 28rpx; color: var(--zz-ink-3); }
-.chips {
-  white-space: nowrap; padding: 8rpx 32rpx 20rpx;
+
+.notice-icon {
+  width: 52rpx;
+  height: 52rpx;
+  flex: none;
+  border-radius: 50%;
+  background: var(--zz-orange-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.chip {
-  display: inline-flex; align-items: center;
-  margin-right: 14rpx; padding: 10rpx 26rpx;
+
+.notice-label {
+  flex: none;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--zz-orange);
+}
+
+.notice-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 24rpx;
+  color: var(--zz-ink-2);
+}
+
+.notice-all {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2rpx;
+  font-size: 20rpx;
+  color: var(--zz-ink-3);
+}
+
+/* 分类四宫格 */
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  justify-items: center;
+  margin: 20rpx 24rpx 0;
+  padding: 18rpx 8rpx 16rpx;
   background: var(--zz-card);
-  border: 2rpx solid var(--zz-line);
-  border-radius: 8rpx;
-  font-size: 24rpx; color: var(--zz-ink-2); line-height: 1.5;
+  border-radius: var(--zz-radius);
+  box-shadow: var(--zz-shadow);
 }
-.chip.on {
+
+.quick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6rpx;
+  padding: 4rpx;
+  border-radius: 14rpx;
+}
+
+.quick.on {
   background: var(--zz-brand-soft);
-  border-color: var(--zz-brand-soft);
-  color: var(--zz-brand); font-weight: 600;
 }
 
-.banner {
-  margin: 0 32rpx 8rpx;
-  border-radius: 14rpx; overflow: hidden;
+.quick-art {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 14rpx;
 }
-.banner-one { display: block; width: 100%; height: 340rpx; }
 
-.feed { padding: 0; }
-.feed-item { padding: 24rpx 32rpx; border-bottom: 1rpx solid var(--zz-line); }
-.more { text-align: center; padding: 18rpx 0 8rpx; }
-.more text { font-size: 24rpx; color: var(--zz-ink-3); }
-
-.sk { padding: 32rpx 32rpx; }
-.pad-empty { padding: 96rpx 32rpx 0; display: flex; flex-direction: column; align-items: center; }
-.retry {
-  margin-top: 8rpx;
-  display: flex; align-items: center; gap: 8rpx;
-  padding: 12rpx 32rpx;
+.quick-label {
+  font-size: 26rpx;
+  line-height: 1.2;
+  font-weight: 500;
+  color: var(--zz-ink);
 }
-.retry-txt { font-size: 26rpx; color: var(--zz-brand); }
+
+/* 文章流 */
+.section {
+  padding: 20rpx 24rpx 18rpx;
+}
+
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.more {
+  padding: 20rpx 0 8rpx;
+  text-align: center;
+}
+
+.more text {
+  font-size: 20rpx;
+  color: var(--zz-ink-3);
+}
+
+.sk {
+  padding-top: 4rpx;
+}
+
+.dot {
+  width: 4rpx;
+  height: 4rpx;
+  border-radius: 50%;
+  background: #c2cad2;
+}
 </style>

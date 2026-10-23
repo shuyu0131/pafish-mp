@@ -1,7 +1,8 @@
 // 时间 / 数字格式化。后端下发 ISO8601（Support::iso），各端解析保持简单。
 
 function parse(iso) {
-  if (!iso) return null
+  if (iso === null || iso === undefined || iso === '') return null
+  if (typeof iso === 'number') return Number.isFinite(iso) ? iso : null
   const s = String(iso).trim()
   // 带时区的 ISO8601 各端原生可解析；先试原生
   let t = Date.parse(s)
@@ -21,12 +22,33 @@ export function fmtShort(iso) {
   return `${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
-/** '09-23 · 12:40'（微语卡片） */
+/** '09-23 · 12:40'（编辑时间等需要完整日期的场景） */
 export function fmtClock(iso) {
   const t = parse(iso)
   if (t === null) return ''
   const d = new Date(t)
   return `${pad(d.getMonth() + 1)}-${pad(d.getDate())} · ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+/** '12:40'（微语分组内只显示时间） */
+export function fmtTime(iso) {
+  const t = parse(iso)
+  if (t === null) return ''
+  const d = new Date(t)
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+/** 微语分组标题：今天 / 昨天 / 10 月 21 日 / 2025 年 10 月 21 日 */
+export function fmtDayLabel(iso) {
+  const t = parse(iso)
+  if (t === null) return ''
+  const d = new Date(t)
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  if (t >= today) return '今天'
+  if (t >= today - 86400000) return '昨天'
+  if (d.getFullYear() === now.getFullYear()) return `${d.getMonth() + 1} 月 ${d.getDate()} 日`
+  return `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日`
 }
 
 /** '2026-09-12'（详情副信息） */

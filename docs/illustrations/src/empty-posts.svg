@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <path d="M158 318 H242 L256 342 H144 Z" fill="#F0EAFB" stroke="#3E4652" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M200 86 C120 86 78 144 78 212 C78 278 130 318 200 318 C270 318 322 278 322 212 C322 144 280 86 200 86 Z" fill="#E6F6FF" stroke="#3E4652" stroke-width="9" stroke-linejoin="round"/>
+  <defs><clipPath id="bowlClip"><path d="M200 86 C120 86 78 144 78 212 C78 278 130 318 200 318 C270 318 322 278 322 212 C322 144 280 86 200 86 Z"/></clipPath></defs>
+  <g clip-path="url(#bowlClip)">
+    <rect x="70" y="196" width="260" height="130" fill="#BFE6FF" opacity=".55"/>
+    <path d="M70 208 C100 194 130 220 160 208 C190 196 220 220 250 208 C280 196 310 220 330 208" fill="none" stroke="#5FB8E8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <path d="M124 154 C112 178 110 202 116 226" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" opacity=".9"/>
+  <g transform="translate(200 238)">
+    <path d="M-42 18 H42 L26 38 H-26 Z" fill="#FFFFFF" stroke="#3E4652" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M0 18 V-18" stroke="#3E4652" stroke-width="5" stroke-linecap="round"/>
+    <path d="M0 18 L0 -8 L30 12 Z" fill="#FFE1E7" stroke="#3E4652" stroke-width="5" stroke-linejoin="round"/>
+  </g>
+  <circle cx="150" cy="170" r="7" fill="#FFFFFF" stroke="#3E4652" stroke-width="4"/>
+  <circle cx="170" cy="146" r="4.5" fill="#FFFFFF" stroke="#3E4652" stroke-width="4"/>
+  <circle cx="246" cy="160" r="5" fill="#FFFFFF" stroke="#3E4652" stroke-width="4"/>
+  <g transform="translate(300 288) rotate(-10)">
+    <path d="M-34 0 C-18 -16 12 -18 26 0 C12 16 -18 16 -34 0 Z" fill="#BFE6FF" stroke="#3E4652" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M26 0 L40 -12 L36 0 L40 12 Z" fill="#E6F6FF" stroke="#3E4652" stroke-width="6" stroke-linejoin="round"/>
+    <circle cx="-15" cy="-3" r="3" fill="#3E4652"/>
+  </g>
+  <path d="M96 100 V120 M86 110 H106" fill="none" stroke="#F5A65B" stroke-width="6" stroke-linecap="round"/>
+</svg>
